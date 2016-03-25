@@ -1,0 +1,3 @@
+src/rrid/scope_exit.h
+src/common/config.h
+src/rrid/scope_exit_test.cc
