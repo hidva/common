@@ -108,6 +108,22 @@ MakeScopeGuard(FunctionType&& fn) noexcept(std::is_nothrow_constructible<ScopeGu
     return ScopeGuardImpl<typename std::decay<FunctionType>::type>(std::forward<FunctionType>(fn));
 }
 
+namespace rrid_detail {
+
+enum class ScopeGuardOnExit {};
+
+template <typename FunctionType>
+inline ScopeGuardImpl<typename std::decay<FunctionType>::type>
+operator +(ScopeGuardOnExit, FunctionType&& fn) noexcept(std::is_nothrow_constructible<ScopeGuardImpl<typename std::decay<FunctionType>::type>,FunctionType>::value)
+{
+    return ScopeGuardImpl<typename std::decay<FunctionType>::type>(std::forward<FunctionType>(fn));
+}
+
+#define ON_SCOPE_EXIT(object_name)  auto object_name = ::pp_qq::rrid_detail::ScopeGuardOnExit {} + [&] () noexcept -> void
+
+
+} // namespace rrid_detail
+
 
 } // namespace pp_qq
 

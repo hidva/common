@@ -5,6 +5,7 @@
 #include <functional>
 #include <type_traits>
 #include <vector>
+#include <stdexcept>
 
 using namespace pp_qq;
 using std::vector;
@@ -213,12 +214,11 @@ TEST(ScopeGuardImplTest, TryCatchFinally)
     TestFinally(ErrorBehavior::kUNHANDLED_ERROR);
 }
 
-#if 0
-TEST(ScopeGuard, TEST_SCOPE_EXIT)
+TEST(ScopeGuardImplTest, ON_SCOPE_EXIT_TEST)
 {
     int x = 0;
     {
-        SCOPE_EXIT { ++x; };
+        ON_SCOPE_EXIT (AddX) { ++x; };
         EXPECT_EQ(0, x);
     }
     EXPECT_EQ(1, x);
@@ -226,30 +226,32 @@ TEST(ScopeGuard, TEST_SCOPE_EXIT)
 
 class Foo {
 public:
-  Foo() {}
-  ~Foo() {
-    try {
-      auto e = std::current_exception();
-      int test = 0;
-      {
-        SCOPE_EXIT { ++test; };
-        EXPECT_EQ(0, test);
-      }
-      EXPECT_EQ(1, test);
-    } catch (const std::exception& ex) {
-      LOG(FATAL) << "Unexpected exception: " << ex.what();
+    Foo() {}
+    ~Foo()
+    {
+        try {
+            auto e = std::current_exception();
+            int test = 0;
+            {
+                ON_SCOPE_EXIT (AddTest) { ++test; };
+                EXPECT_EQ(0, test);
+            }
+            EXPECT_EQ(1, test);
+        } catch (const std::exception& ex) {
+        }
     }
-  }
 };
 
-TEST(ScopeGuard, TEST_SCOPE_FAILURE2) {
-  try {
-    Foo f;
-    throw std::runtime_error("test");
-  } catch (...) {
-  }
+TEST(ScopeGuardImplTest, TEST_SCOPE_FAILURE2)
+{
+    try {
+        Foo f;
+        throw std::runtime_error("test");
+    } catch (...) {
+    }
 }
 
+#if 0
 void testScopeFailAndScopeSuccess(ErrorBehavior error, bool expectFail) {
   bool scopeFailExecuted = false;
   bool scopeSuccessExecuted = false;
