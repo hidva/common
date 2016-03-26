@@ -3,4 +3,4 @@ src/common/config.h
 src/rrid/scope_exit_test.cc
 src/rrid/on_exception.h
 src/rrid/on_exception_test.cc
-src/preprocess/preprocess.h
+src/common/preprocess.h

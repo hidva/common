@@ -1,13 +1,13 @@
 
 [
     {   
-        "name":"rrid",
-        "files":[],
+        "name":"common",
+        "files":["src/common/"],
         "dependency":[]
     },
     {   
-        "name":"",
-        "files":[],
-        "dependency":[]
+        "name":"rrid",
+        "files":["src/rrid/"],
+        "dependency":["common"]
     }
 ]

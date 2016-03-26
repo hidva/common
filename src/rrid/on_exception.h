@@ -3,7 +3,7 @@
 
 #include <exception>
 #include "rrid/scope_exit.h"
-#include "preprocess/preprocess.h"
+#include "common/preprocess.h"
 
 namespace pp_qq {
 
