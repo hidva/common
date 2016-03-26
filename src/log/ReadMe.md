@@ -9,10 +9,10 @@
 
     1.  若请求的日志级别小于当前日志级别,则不输出日志;否则:
     2.  收到能收集到的元信息;当前收集以下信息:
-        -  __func__;
-        -  __PRETTY_FUNCTION__;
-        -  __FILE__;
-        -  __LINE__;
+        -  `__func__`;
+        -  `__PRETTY_FUNCTION__`;
+        -  `__FILE__`;
+        -  `__LINE__`;
         -  logMsg;
     3.  调用指定的 handler 来进行处理;
 
