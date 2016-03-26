@@ -14,5 +14,10 @@
         "name":"formatter",
         "files":["src/formatter/"],
         "dependency":["rrid"]
+    },
+    {   
+        "name":"log",
+        "files":["src/log/"],
+        "dependency":["formatter"]
     }
 ]

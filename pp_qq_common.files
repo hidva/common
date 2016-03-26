@@ -6,3 +6,6 @@ src/rrid/on_exception_test.cc
 src/common/preprocess.h
 src/formatter/stdio_formatter.h
 src/formatter/stdio_formatter_test.cc
+src/log/pp_qq_log.h
+src/log/pp_qq_log.cc
+src/log/pp_qq_log_test.cc
