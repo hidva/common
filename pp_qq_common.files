@@ -4,3 +4,5 @@ src/rrid/scope_exit_test.cc
 src/rrid/on_exception.h
 src/rrid/on_exception_test.cc
 src/common/preprocess.h
+src/formatter/stdio_formatter.h
+src/formatter/stdio_formatter_test.cc

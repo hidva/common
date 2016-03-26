@@ -9,5 +9,10 @@
         "name":"rrid",
         "files":["src/rrid/"],
         "dependency":["common"]
+    },
+    {
+        "name":"formatter",
+        "files":["src/formatter/"],
+        "dependency":["rrid"]
     }
 ]
