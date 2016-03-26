@@ -21,6 +21,8 @@ struct ScopeGuardImplBase {
 #endif
 
 protected:
+    /* 若为真,则表明不执行回调;
+     */
     bool dismissed_ = false;
 };
 
@@ -31,7 +33,6 @@ inline void ScopeGuardImplBase::Dismiss() noexcept(true)
 }
 
 
-} // namespace rrid_detail
 
 /* 编写异常安全的代码可真是麻烦呐... */
 
@@ -47,17 +48,13 @@ struct ScopeGuardImpl : public rrid_detail::ScopeGuardImplBase {
     {
     }
 
-    explicit ScopeGuardImpl(FunctionType&& fn) noexcept(std::is_nothrow_move_constructible<FunctionType>::value || std::is_nothrow_copy_constructible<FunctionType>::value):
-        ScopeGuardImpl(std::move_if_noexcept(fn),
-            MakeFailsafe(typename std::conditional<
-                            std::is_nothrow_move_constructible<FunctionType>::value || std::is_nothrow_copy_constructible<FunctionType>::value,
-                            std::true_type,
-                            std::false_type>::type{},&fn))
+    explicit ScopeGuardImpl(FunctionType&& fn) noexcept(std::is_nothrow_move_constructible<FunctionType>::value):
+        ScopeGuardImpl(std::forward<FunctionType>(fn),MakeFailsafe(std::is_nothrow_move_constructible<FunctionType>{},&fn))
     {
     }
 
-    ScopeGuardImpl(ScopeGuardImpl&& other) noexcept(std::is_nothrow_move_constructible<FunctionType>::value || std::is_nothrow_copy_constructible<FunctionType>::value):
-        function_(std::move_if_noexcept(other.function_))
+    ScopeGuardImpl(ScopeGuardImpl&& other) noexcept(std::is_nothrow_move_constructible<FunctionType>::value):
+        function_(std::move(other.function_))
     {
         dismissed_ = other.dismissed_;
         other.dismissed_ = true;
@@ -101,11 +98,13 @@ private:
     ScopeGuardImpl& operator =(ScopeGuardImpl &&) = delete;
 };
 
+} // namespace rrid_detail
+
 template <typename FunctionType>
-inline ScopeGuardImpl<typename std::decay<FunctionType>::type>
-MakeScopeGuard(FunctionType&& fn) noexcept(std::is_nothrow_constructible<ScopeGuardImpl<typename std::decay<FunctionType>::type>,FunctionType>::value)
+inline rrid_detail::ScopeGuardImpl<typename std::decay<FunctionType>::type>
+MakeScopeGuard(FunctionType&& fn)
 {
-    return ScopeGuardImpl<typename std::decay<FunctionType>::type>(std::forward<FunctionType>(fn));
+    return rrid_detail::ScopeGuardImpl<typename std::decay<FunctionType>::type>(std::forward<FunctionType>(fn));
 }
 
 namespace rrid_detail {
@@ -114,15 +113,17 @@ enum class ScopeGuardOnExit {};
 
 template <typename FunctionType>
 inline ScopeGuardImpl<typename std::decay<FunctionType>::type>
-operator +(ScopeGuardOnExit, FunctionType&& fn) noexcept(std::is_nothrow_constructible<ScopeGuardImpl<typename std::decay<FunctionType>::type>,FunctionType>::value)
+operator +(ScopeGuardOnExit, FunctionType&& fn)
 {
     return ScopeGuardImpl<typename std::decay<FunctionType>::type>(std::forward<FunctionType>(fn));
 }
 
-#define ON_SCOPE_EXIT(object_name)  auto object_name = ::pp_qq::rrid_detail::ScopeGuardOnExit {} + [&] () noexcept -> void
 
 
 } // namespace rrid_detail
+
+#define PP_QQ_ON_SCOPE_EXIT(object_name)  auto object_name = ::pp_qq::rrid_detail::ScopeGuardOnExit {} + [&] () noexcept -> void
+#define ON_SCOPE_EXIT(object_name) PP_QQ_ON_SCOPE_EXIT(object_name)
 
 
 } // namespace pp_qq
