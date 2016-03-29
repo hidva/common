@@ -26,3 +26,22 @@ StringType& VAppendStdioFormat(StringType &str,const char *f,va_list ap);
 
 *   同`AppendStdioFormat()`一致,只不过使用`va_list`来代替可变参数.
 
+### CreateStringFromStdioFormat
+
+```c++
+template <typename StringType>
+StringType CreateStringFromStdioFormat();
+```
+
+*   使用`StringType{}`构建一个`StringType`对象.
+*   `TPARAM:StringType`;与`std::string`兼容的字符串类.
+
+```c++
+template <typename StringType>
+StringType CreateStringFromStdioFormat(const char *format,...);
+```
+
+*   根据`format`的指示将后续参数格式化为一个字符串.并根据该字符串构建一个`StringType`对象,然后
+    返回该对象.
+*   `TPARAM:StringType`;与`std::string`兼容的字符串类.
+
