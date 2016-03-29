@@ -79,3 +79,13 @@ TEST(AppendStdioFormatTest,test1)
 #endif
     }
 }
+
+TEST(CreateStringFromStdioFormatTest,test1)
+{
+    EXPECT_EQ(std::string{},CreateStringFromStdioFormat<std::string>());
+    EXPECT_EQ(std::string{},CreateStringFromStdioFormat<std::string>(static_cast<const char*>(nullptr)));
+    EXPECT_EQ(std::string{},CreateStringFromStdioFormat<std::string>(""));
+    EXPECT_EQ(std::string{"Hello"},CreateStringFromStdioFormat<std::string>("Hello"));
+    EXPECT_EQ(std::string{"Hello: 33,world"},CreateStringFromStdioFormat<std::string>("Hello: %d,%s",33,"world"));
+}
+

@@ -9,3 +9,6 @@ src/formatter/stdio_formatter_test.cc
 src/log/pp_qq_log.h
 src/log/pp_qq_log.cc
 src/log/pp_qq_log_test.cc
+src/exception/errno_exception.h
+src/exception/errno_exception.cc
+src/exception/errno_exception_test.cc

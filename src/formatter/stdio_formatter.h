@@ -65,5 +65,29 @@ StringType& AppendStdioFormat(StringType &str,const char *format,...)
 }
 
 
+template <typename StringType>
+StringType CreateStringFromStdioFormat(const char *format,...) __attribute__((__format__(printf,1,2)));
+
+template <typename StringType>
+StringType CreateStringFromStdioFormat(const char *format,...)
+{
+    va_list ap;
+    va_start(ap,format);
+    ON_SCOPE_EXIT(va_end_ap) {
+        va_end(ap);
+    };
+
+    StringType str;
+    VAppendStdioFormat(str,format,ap);
+    return str;
+}
+
+template <typename StringType>
+inline StringType CreateStringFromStdioFormat()
+{
+    return StringType{};
+}
+
+
 
 #endif // ORG_PP_QQ_COMMON_FORMATTER_STDIO_FORMATTER_H
