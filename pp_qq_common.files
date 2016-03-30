@@ -12,3 +12,8 @@ src/log/pp_qq_log_test.cc
 src/exception/errno_exception.h
 src/exception/errno_exception.cc
 src/exception/errno_exception_test.cc
+src/hex_coding/hex_coding.h
+src/hex_coding/hex_coding.cc
+src/common/inlines.h
+src/common/inlines_test.cc
+src/hex_coding/hex_coding_test.cc

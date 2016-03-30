@@ -20,6 +20,11 @@
         "files":["src/exception/"],
         "dependency":["formatter"]
     },
+    {
+        "name":"hex_coding",
+        "files":["src/hex_coding/"],
+        "dependency":["rrid","exception"]
+    },
     {   
         "name":"log",
         "files":["src/log/"],

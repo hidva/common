@@ -31,3 +31,25 @@ auto PP_QQ_ANONYMOUS_NAME(on_exception_obj) = MakeOnException(f);
 ```
 
 
+## API Reference: inlines.h
+
+*   该文件**只定义**`inline`函数! 存放着一些全局通用的工具函数.
+
+### IsEven
+
+```c++
+bool IsEven(unsigned long number) noexcept;
+```
+
+*   若`number`为偶数,则返回`true`;否则返回`false`.
+
+### IsOdd
+
+```c++
+bool IsOdd(unsigned long number) noexcept;
+```
+
+*   若`number`为奇数,则返回`true`;否则返回`false`.
+
+
+
