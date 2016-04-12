@@ -17,3 +17,5 @@ src/hex_coding/hex_coding.cc
 src/common/inlines.h
 src/common/inlines_test.cc
 src/hex_coding/hex_coding_test.cc
+src/common/execute_time_get.h
+src/glibc_cxx_wrap/macros.h
