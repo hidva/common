@@ -10,10 +10,10 @@
     } while (0)
 
 #define GLIBC_CXX_WRAP_1_ERRNO(statement,args...)               \
-    GLIBC_CXX_WRAP_errno(-1,(statement),##args)
+    GLIBC_CXX_WRAP_ERRNO(-1,(statement),##args)
 
 #define GLIBC_CXX_WRAP_NULL_ERRNO(statement,args...)            \
-    GLIBC_CXX_WRAP_errno(nullptr,(statement),##args)
+    GLIBC_CXX_WRAP_ERRNO(nullptr,(statement),##args)
 
 #define GLIBC_CXX_WARP_S0(statement,args...)                     \
     do {                                                        \

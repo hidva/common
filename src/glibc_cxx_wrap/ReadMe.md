@@ -39,11 +39,81 @@
         └── cxx_timerfd.h    
     ```
 
-*   自动生成
-
+*   自动生成计划;本意是通过读取 glibc 文档,解析文档,提取出函数声明以及函数出错类型,然后自动生成
+    包装函数来着.但是简单看了一下 glibc 文档,好像没有发现太明显的规律;加上现在时间紧,所以就做个
+    **TODO**吧.
 
 ## API Reference: macros.h
 
+### GLIBC_CXX_WRAP_ERRNO
+
+```c++
+#define GLIBC_CXX_WRAP_ERRNO(fail_ret,glibc_call_statement);
+#define GLIBC_CXX_WRAP_ERRNO(fail_ret,glibc_call_statement,format,...);
+```
+
+*   若一个 glibc 接口在出错时总是返回一个固定值`fail_ret`,并且错误码存放在`errno`中,则可以使
+    用该宏封装;
+*   这样若 glibc 接口执行成功,则无操作;
+*   若执行失败,则会抛出`ErrnoException`类型异常.其中:
+
+    -   `ErrnoException::errnum()`中记录着`errno`的值;
+    -   `ErrnoException::err_msg()`中记录了`format`以及其后续参数格式化后的字符串;若未指定
+        `format`及后续参数,则为空.
+        
+
+#### DEMO
+
+```c++
+struct stat file_stat_obj;
+GLIBC_CXX_WRAP_ERRNO(-1,stat(path,&file_stat_obj));
+// 若执行这里,则表明 stat() 执行成功;否则表明 stat() 出错,此时已经抛出了一个异常.
+```
+
+### GLIBC_CXX_WRAP_1_ERRNO
+
+```c++
+#define GLIBC_CXX_WRAP_1_ERRNO(statement);
+#define GLIBC_CXX_WRAP_1_ERRNO(statement,format,...);
+```
+
+*   若 glibc 接口在出错时总是返回`-1`,并且错误码存放在`errno`中,则可以使用该宏来封装.
+*   这样若 glibc 接口执行成功,则无操作;
+*   若执行失败,则会抛出`ErrnoException`类型异常.其中:
+
+    -   `ErrnoException::errnum()`中记录着`errno`的值;
+    -   `ErrnoException::err_msg()`中记录了`format`以及其后续参数格式化后的字符串;若未指定
+        `format`及后续参数,则为空.
+
+### GLIBC_CXX_WRAP_NULL_ERRNO
+
+```c++
+#define GLIBC_CXX_WRAP_NULL_ERRNO(statement);
+#define GLIBC_CXX_WRAP_NULL_ERRNO(statement,format,...);  
+```
+
+*   若 glibc 接口在出错时返回`nullptr`,并且将错误码存放在`errno`中,则可以使用该宏来封装.
+*   这样若 glibc 接口执行成功,则无操作;
+*   若执行失败,则会抛出`ErrnoException`类型异常.其中:
+
+    -   `ErrnoException::errnum()`中记录着`errno`的值;
+    -   `ErrnoException::err_msg()`中记录了`format`以及其后续参数格式化后的字符串;若未指定
+        `format`及后续参数,则为空.
+
+### GLIBC_CXX_WARP_S0
+
+```c++
+#define GLIBC_CXX_WARP_S0(statement);
+#define GLIBC_CXX_WARP_S0(statement,format,...);
+```
+
+*   若 glibc 接口在**成功**时返回`0`,失败时返回错误码,如 pthread 接口;则可以使用该宏来进行封装.
+*   这样若 glibc 接口执行成功,则无操作;
+*   若执行失败,则会抛出`ErrnoException`类型异常.其中:
+
+    -   `ErrnoException::errnum()`中记录着`errno`的值;
+    -   `ErrnoException::err_msg()`中记录了`format`以及其后续参数格式化后的字符串;若未指定
+        `format`及后续参数,则为空.
 
 
 [0]: <https://www.gnu.org/software/libc/manual/html_mono/libc.html>

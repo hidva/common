@@ -19,3 +19,10 @@ src/common/inlines_test.cc
 src/hex_coding/hex_coding_test.cc
 src/common/execute_time_get.h
 src/glibc_cxx_wrap/macros.h
+src/glibc_cxx_wrap/sys/cxx_timerfd.h
+src/glibc_cxx_wrap/sys/cxx_stat.h
+src/glibc_cxx_wrap/sys/cxx_mman.h
+src/glibc_cxx_wrap/sys/cxx_inotify.h
+src/glibc_cxx_wrap/sys/cxx_epoll.h
+src/glibc_cxx_wrap/sys/test_1.cc
+src/glibc_cxx_wrap/sys/test_2.cc
