@@ -4,6 +4,8 @@
 #include "glibc_cxx_wrap/sys/cxx_epoll.h"
 #include "glibc_cxx_wrap/sys/cxx_timerfd.h"
 #include "glibc_cxx_wrap/macros.h"
+#include "glibc_cxx_wrap/cxx_time.h"
+
 
 /* test_1.cc test_2.cc 测试有 2 个目的:
  * 1. 测试是否有语法问题.

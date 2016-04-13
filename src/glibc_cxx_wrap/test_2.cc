@@ -5,5 +5,6 @@
 #include "glibc_cxx_wrap/sys/cxx_epoll.h"
 #include "glibc_cxx_wrap/sys/cxx_timerfd.h"
 #include "glibc_cxx_wrap/macros.h"
+#include "glibc_cxx_wrap/cxx_time.h"
 
 
