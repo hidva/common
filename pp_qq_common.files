@@ -30,3 +30,5 @@ src/glibc_cxx_wrap/test_1.cc
 src/glibc_cxx_wrap/test_2.cc
 src/execute_time_get/execute_time_get.h
 src/execute_time_get/execute_time_get_test.cc
+test/run_test.cc
+test/false_sharing_test.cc
