@@ -14,7 +14,7 @@ namespace detail {
  * @param left,right 调用方确保 left,right normalized!!!并且 left >= right!!!
  * @warning 当 left,right 之间相差太大时,可能会溢出.比如相差 560 年... T_T
  */
-uint_fast64_t GetTimespecDiff(const struct timespec *left,const struct timespec *right) noexcept
+inline uint_fast64_t GetTimespecDiff(const struct timespec *left,const struct timespec *right) noexcept
 {
     uint_fast64_t la = left->tv_sec;
     uint_fast64_t lb = left->tv_nsec;
