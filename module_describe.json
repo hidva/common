@@ -25,6 +25,16 @@
         "files":["src/hex_coding/"],
         "dependency":["rrid","exception"]
     },
+    {
+        "name":"glibc_cxx_wrap",
+        "files":["src/glibc_cxx_wrap/"],
+        "dependency":["exception"]
+    },
+    {
+        "name":"execute_time_get",
+        "files":["src/execute_time_get/"],
+        "dependency":["glibc_cxx_wrap"]
+    },
     {   
         "name":"log",
         "files":["src/log/"],
