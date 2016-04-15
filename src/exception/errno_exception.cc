@@ -12,4 +12,33 @@ const char* ErrnoException::what() const noexcept
     return buf_for_what_.data();
 }
 
+ErrnoException::ErrnoException(const std::string &fname,int errnum,const char *format,...):
+    function_name_(fname),
+    err_number_(errnum)
+{
+    va_list ap;
+    va_start(ap,format);
+    ON_SCOPE_EXIT(va_end_ap) {
+        va_end(ap);
+    };
+
+    VAppendStdioFormat(err_msg_,format,ap);
+    return ;
+}
+
+ErrnoException::ErrnoException(std::string &&fname,int errnum,const char *format,...):
+    function_name_(std::move(fname)),
+    err_number_(errnum)
+{
+    va_list ap;
+    va_start(ap,format);
+    ON_SCOPE_EXIT(va_end_ap) {
+        va_end(ap);
+    };
+
+    VAppendStdioFormat(err_msg_,format,ap);
+    return ;
+}
+
+
 }
