@@ -43,4 +43,10 @@
     char cback() const;
     ```
 
+*   在实现上"参考"了[facebook/folly][0]中`FBString`;对`FBString`的实现分析在[这里][1].
+
+
+
+[0]: <https://github.com/facebook/folly>
+[1]: <http://pp-qq.github.io/2016/03/28/FBString.html>
 
