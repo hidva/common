@@ -27,5 +27,20 @@
     ```
 
 *   所以准备实现一个对 COW 友好的 string,在标准 std::string 提供的接口之上新增若干接口,在
-    每一个会返回引用(或地址)的
+    每一个会返回引用(或地址)的接口都提供如下三个版本:
+    
+    ```c++
+    // 很显然 cfront() 与 front()[非 const 版本] 最大的区别在其返回的是一份拷贝,这时候对于
+    // 底层 string 来说,是不需要 fork 字符串内存的.
+    char& front();
+    char front() const;
+    char cfront() const;
+    ```
+    
+    ```c++
+    char& back();
+    char back() const;
+    char cback() const;
+    ```
+
 
