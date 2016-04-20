@@ -35,3 +35,5 @@ test/false_sharing_test.cc
 test/cow_test.cc
 src/string/extended_std_string.h
 src/string/extended_std_string_test.cc
+src/string/string_piece.h
+src/string/string_piece.cc
