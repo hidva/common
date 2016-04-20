@@ -32,4 +32,6 @@ src/execute_time_get/execute_time_get.h
 src/execute_time_get/execute_time_get_test.cc
 test/run_test.cc
 test/false_sharing_test.cc
-src/string/fb_string_basic.h
+test/cow_test.cc
+src/string/extended_std_string.h
+src/string/extended_std_string_test.cc

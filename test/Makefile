@@ -27,13 +27,16 @@ CXX_SRC += $(PROJECT_PATH)/src/formatter/stdio_formatter_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/gtest/src/gtest-all.cc
 
-
+CXX_SRC += $(PROJECT_PATH)/src/string/extended_std_string_test.cc
 
 C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
 
 C_CXX_SHARED_CFLAGS += -I$(PROJECT_PATH)/gtest/ -I$(PROJECT_PATH)/gtest/include
 
 C_CXX_SHARED_CFLAGS += -I$(PROJECT_PATH)/src/
+
+#C_CXX_SHARED_CFLAGS += -I/home/pp-qq/lib/folly/include
+
 
 CFLAGS := $(C_CXX_SHARED_CFLAGS)   
 

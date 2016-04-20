@@ -17,7 +17,8 @@
 // @author: Andrei Alexandrescu (aalexandre)
 // String type.
 
-#pragma once
+#ifndef FOLLY_BASE_FBSTRING_H_
+#define FOLLY_BASE_FBSTRING_H_
 
 #include <atomic>
 #include <limits>
@@ -39,39 +40,39 @@
 
 // Handle the cases where the fbcode version (folly/Malloc.h) is included
 // either before or after this inclusion.
-// #ifdef FOLLY_MALLOC_H_
-// #undef FOLLY_MALLOC_H_
-// #include "basic_fbstring_malloc.h" // nolint
-// #else
-// #include "basic_fbstring_malloc.h" // nolint
-// #undef FOLLY_MALLOC_H_
-// #endif
+#ifdef FOLLY_MALLOC_H_
+#undef FOLLY_MALLOC_H_
+#include "basic_fbstring_malloc.h" // nolint
+#else
+#include "basic_fbstring_malloc.h" // nolint
+#undef FOLLY_MALLOC_H_
+#endif
 
 #else // !_LIBSTDCXX_FBSTRING
 
-// #include <folly/Portability.h>
+#include <folly/Portability.h>
 
 // libc++ doesn't provide this header, nor does msvc
-// #ifdef FOLLY_HAVE_BITS_CXXCONFIG_H
-// #include <bits/c++config.h>
-// #endif
+#ifdef FOLLY_HAVE_BITS_CXXCONFIG_H
+#include <bits/c++config.h>
+#endif
 
 #include <string>
 #include <cstring>
 #include <cassert>
 #include <algorithm>
 
-// #include <folly/Traits.h>
-// #include <folly/Malloc.h>
-// #include <folly/Hash.h>
-// #include <folly/ScopeGuard.h>
+#include <folly/Traits.h>
+#include <folly/Malloc.h>
+#include <folly/Hash.h>
+#include <folly/ScopeGuard.h>
 
-// #if FOLLY_HAVE_DEPRECATED_ASSOC
-// #ifdef _GLIBCXX_SYMVER
-// #include <ext/hash_set>
-// #include <ext/hash_map>
-// #endif
-// #endif
+#if FOLLY_HAVE_DEPRECATED_ASSOC
+#ifdef _GLIBCXX_SYMVER
+#include <ext/hash_set>
+#include <ext/hash_map>
+#endif
+#endif
 
 #endif
 
@@ -105,27 +106,94 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace folly {
 #endif
 
+// Different versions of gcc/clang support different versions of
+// the address sanitizer attribute.  Unfortunately, this attribute
+// has issues when inlining is used, so disable that as well.
 #if defined(__clang__)
 # if __has_feature(address_sanitizer)
-#  define FBSTRING_SANITIZE_ADDRESS
+#  if __has_attribute(__no_sanitize__)
+#   define FBSTRING_DISABLE_ADDRESS_SANITIZER \
+      __attribute__((__no_sanitize__("address"), __noinline__))
+#  elif __has_attribute(__no_address_safety_analysis__)
+#   define FBSTRING_DISABLE_ADDRESS_SANITIZER \
+      __attribute__((__no_address_safety_analysis__, __noinline__))
+#  elif __has_attribute(__no_sanitize_address__)
+#   define FBSTRING_DISABLE_ADDRESS_SANITIZER \
+      __attribute__((__no_sanitize_address__, __noinline__))
+#  endif
 # endif
 #elif defined (__GNUC__) && \
-      (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 8)) || (__GNUC__ >= 5)) && \
       __SANITIZE_ADDRESS__
-# define FBSTRING_SANITIZE_ADDRESS
+# define FBSTRING_DISABLE_ADDRESS_SANITIZER \
+    __attribute__((__no_address_safety_analysis__, __noinline__))
+#endif
+#ifndef FBSTRING_DISABLE_ADDRESS_SANITIZER
+# define FBSTRING_DISABLE_ADDRESS_SANITIZER
 #endif
 
-// When compiling with ASan, always heap-allocate the string even if
-// it would fit in-situ, so that ASan can detect access to the string
-// buffer after it has been invalidated (destroyed, resized, etc.).
-// Note that this flag doesn't remove support for in-situ strings, as
-// that would break ABI-compatibility and wouldn't allow linking code
-// compiled with this flag with code compiled without.
-#ifdef FBSTRING_SANITIZE_ADDRESS
-# define FBSTRING_DISABLE_SSO true
-#else
-# define FBSTRING_DISABLE_SSO false
-#endif
+namespace fbstring_detail {
+
+template <class InIt, class OutIt>
+inline
+OutIt copy_n(InIt b,
+             typename std::iterator_traits<InIt>::difference_type n,
+             OutIt d) {
+  for (; n != 0; --n, ++b, ++d) {
+    *d = *b;
+  }
+  return d;
+}
+
+template <class Pod, class T>
+inline void pod_fill(Pod* b, Pod* e, T c) {
+  assert(b && e && b <= e);
+  /*static*/ if (sizeof(T) == 1) {
+    memset(b, c, e - b);
+  } else {
+    auto const ee = b + ((e - b) & ~7u);
+    for (; b != ee; b += 8) {
+      b[0] = c;
+      b[1] = c;
+      b[2] = c;
+      b[3] = c;
+      b[4] = c;
+      b[5] = c;
+      b[6] = c;
+      b[7] = c;
+    }
+    // Leftovers
+    for (; b != e; ++b) {
+      *b = c;
+    }
+  }
+}
+
+/*
+ * Lightly structured memcpy, simplifies copying PODs and introduces
+ * some asserts. Unfortunately using this function may cause
+ * measurable overhead (presumably because it adjusts from a begin/end
+ * convention to a pointer/size convention, so it does some extra
+ * arithmetic even though the caller might have done the inverse
+ * adaptation outside).
+ */
+template <class Pod>
+inline void pod_copy(const Pod* b, const Pod* e, Pod* d) {
+  assert(e >= b);
+  assert(d >= e || d + (e - b) <= b);
+  memcpy(d, b, (e - b) * sizeof(Pod));
+}
+
+/*
+ * Lightly structured memmove, simplifies copying PODs and introduces
+ * some asserts
+ */
+template <class Pod>
+inline void pod_move(const Pod* b, const Pod* e, Pod* d) {
+  assert(e >= b);
+  memmove(d, b, (e - b) * sizeof(*b));
+}
+
+} // namespace fbstring_detail
 
 /**
  * Defines a special acquisition method for constructing fbstring
@@ -176,8 +244,6 @@ public:
   // initialized (the beginning of the expanded portion). The caller
   // is expected to fill the expanded area appropriately.
   // If expGrowth is true, exponential growth is guaranteed.
-  // It is not guaranteed not to reallocate even if size() + delta <
-  // capacity(), so all references to the buffer are invalidated.
   Char* expand_noinit(size_t delta, bool expGrowth);
   // Expands the string by one character and sets the last character
   // to c.
@@ -229,18 +295,6 @@ private:
  * to extract capacity/category.
  */
 template <class Char> class fbstring_core {
-protected:
-// It's MSVC, so we just have to guess ... and allow an override
-#ifdef _MSC_VER
-# ifdef FOLLY_ENDIAN_BE
-  static constexpr auto kIsLittleEndian = false;
-# else
-  static constexpr auto kIsLittleEndian = true;
-# endif
-#else
-  static constexpr auto kIsLittleEndian =
-      __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__;
-#endif
 public:
   fbstring_core() noexcept { reset(); }
 
@@ -287,13 +341,17 @@ public:
   fbstring_core(fbstring_core&& goner) noexcept {
     // Take goner's guts
     ml_ = goner.ml_;
-    // Clean goner's carcass
-    goner.reset();
+    if (goner.category() != Category::isSmall) {
+      // Clean goner's carcass
+      goner.reset();
+    }
   }
 
-  fbstring_core(const Char *const data,
-                const size_t size,
-                bool disableSSO = FBSTRING_DISABLE_SSO) {
+  // NOTE(agallagher): The word-aligned copy path copies bytes which are
+  // outside the range of the string, and makes address sanitizer unhappy,
+  // so just disable it on this function.
+  fbstring_core(const Char *const data, const size_t size)
+      FBSTRING_DISABLE_ADDRESS_SANITIZER {
 #ifndef NDEBUG
 #ifndef _LIBSTDCXX_FBSTRING
     SCOPE_EXIT {
@@ -304,7 +362,7 @@ public:
 #endif
 
     // Simplest case first: small strings are bitblitted
-    if (!disableSSO && size <= maxSmallSize) {
+    if (size <= maxSmallSize) {
       // Layout is: Char* data_, size_t size_, size_t capacity_
       static_assert(sizeof(*this) == sizeof(Char*) + 2 * sizeof(size_t),
           "fbstring has unexpected size");
@@ -316,11 +374,10 @@ public:
 
       // If data is aligned, use fast word-wise copying. Otherwise,
       // use conservative memcpy.
-      // The word-wise path reads bytes which are outside the range of
-      // the string, and makes ASan unhappy, so we disable it when
-      // compiling with ASan.
-#ifndef FBSTRING_SANITIZE_ADDRESS
-      if ((reinterpret_cast<size_t>(data) & (sizeof(size_t) - 1)) == 0) {
+      if (reinterpret_cast<size_t>(data) & (sizeof(size_t) - 1)) {
+        fbstring_detail::pod_copy(data, data + size, small_);
+      } else {
+        // Copy one word at a time
         const size_t byteSize = size * sizeof(Char);
         constexpr size_t wordWidth = sizeof(size_t);
         switch ((byteSize + wordWidth - 1) / wordWidth) { // Number of words.
@@ -333,10 +390,6 @@ public:
         case 0:
           break;
         }
-      } else
-#endif
-      {
-        fbstring_detail::pod_copy(data, data + size, small_);
       }
       setSmallSize(size);
     } else {
@@ -470,7 +523,7 @@ public:
     }
   }
 
-  void reserve(size_t minCapacity, bool disableSSO = FBSTRING_DISABLE_SSO) {
+  void reserve(size_t minCapacity) {
     if (category() == Category::isLarge) {
       // Ensure unique
       if (RefCounted::refs(ml_.data_) > 1) {
@@ -531,10 +584,17 @@ public:
       }
     } else {
       assert(category() == Category::isSmall);
-      if (!disableSSO && minCapacity <= maxSmallSize) {
-        // small
-        // Nothing to do, everything stays put
-      } else if (minCapacity <= maxMediumSize) {
+      if (minCapacity > maxMediumSize) {
+        // large
+        auto const newRC = RefCounted::create(& minCapacity);
+        auto const size = smallSize();
+        // Also copies terminator.
+        fbstring_detail::pod_copy(small_, small_ + size + 1, newRC->data_);
+        ml_.data_ = newRC->data_;
+        ml_.size_ = size;
+        ml_.setCapacity(minCapacity, Category::isLarge);
+        assert(capacity() >= minCapacity);
+      } else if (minCapacity > maxSmallSize) {
         // medium
         // Don't forget to allocate one extra Char for the terminating null
         auto const allocSizeBytes =
@@ -547,30 +607,21 @@ public:
         ml_.size_ = size;
         ml_.setCapacity(allocSizeBytes / sizeof(Char) - 1, Category::isMedium);
       } else {
-        // large
-        auto const newRC = RefCounted::create(& minCapacity);
-        auto const size = smallSize();
-        // Also copies terminator.
-        fbstring_detail::pod_copy(small_, small_ + size + 1, newRC->data_);
-        ml_.data_ = newRC->data_;
-        ml_.size_ = size;
-        ml_.setCapacity(minCapacity, Category::isLarge);
-        assert(capacity() >= minCapacity);
+        // small
+        // Nothing to do, everything stays put
       }
     }
     assert(capacity() >= minCapacity);
   }
 
-  Char * expand_noinit(const size_t delta,
-                       bool expGrowth = false,
-                       bool disableSSO = FBSTRING_DISABLE_SSO) {
+  Char * expand_noinit(const size_t delta, bool expGrowth = false) {
     // Strategy is simple: make room, then change size
     assert(capacity() >= size());
     size_t sz, newSz;
     if (category() == Category::isSmall) {
       sz = smallSize();
       newSz = sz + delta;
-      if (!disableSSO && FBSTRING_LIKELY(newSz <= maxSmallSize)) {
+      if (FBSTRING_LIKELY(newSz <= maxSmallSize)) {
         setSmallSize(newSz);
         return small_ + sz;
       }
@@ -593,7 +644,7 @@ public:
   }
 
   void push_back(Char c) {
-    *expand_noinit(1, /* expGrowth = */ true) = c;
+    *expand_noinit(1, /* expGrowth */ true) = c;
   }
 
   size_t size() const {
@@ -909,7 +960,6 @@ public:
                                 > const_reverse_iterator;
 
   static const size_type npos;                     // = size_type(-1)
-  typedef std::true_type IsRelocatable;
 
 private:
   static void procrustes(size_type& n, size_type nmax) {
@@ -917,6 +967,673 @@ private:
   }
 
 public:
+  // C++11 21.4.2 construct/copy/destroy
+
+  // Note: while the following two constructors can be (and previously were)
+  // collapsed into one constructor written this way:
+  //
+  //   explicit basic_fbstring(const A& a = A()) noexcept { }
+  //
+  // This can cause Clang (at least version 3.7) to fail with the error:
+  //   "chosen constructor is explicit in copy-initialization ...
+  //   in implicit initialization of field '(x)' with omitted initializer"
+  //
+  // if used in a struct which is default-initialized.  Hence the split into
+  // these two separate constructors.
+
+  basic_fbstring() noexcept : basic_fbstring(A()) {
+  }
+
+  explicit basic_fbstring(const A&) noexcept {
+  }
+
+  basic_fbstring(const basic_fbstring& str)
+      : store_(str.store_) {
+  }
+
+  // Move constructor
+  basic_fbstring(basic_fbstring&& goner) noexcept
+      : store_(std::move(goner.store_)) {
+  }
+
+#ifndef _LIBSTDCXX_FBSTRING
+  // This is defined for compatibility with std::string
+  /* implicit */ basic_fbstring(const std::string& str)
+      : store_(str.data(), str.size()) {
+  }
+#endif
+
+  basic_fbstring(const basic_fbstring& str,
+                 size_type pos,
+                 size_type n = npos,
+                 const A& /* a */ = A()) {
+    assign(str, pos, n);
+  }
+
+  /* implicit */ basic_fbstring(const value_type* s, const A& /*a*/ = A())
+      : store_(s, s
+          ? traits_type::length(s)
+          : (std::__throw_logic_error(
+                "basic_fbstring: null pointer initializer not valid"),
+             0)) {
+  }
+
+  basic_fbstring(const value_type* s, size_type n, const A& /*a*/ = A())
+      : store_(s, n) {
+  }
+
+  basic_fbstring(size_type n, value_type c, const A& /*a*/ = A()) {
+    auto const pData = store_.expand_noinit(n);
+    fbstring_detail::pod_fill(pData, pData + n, c);
+  }
+
+  template <class InIt>
+  basic_fbstring(InIt begin, InIt end,
+                 typename std::enable_if<
+                 !std::is_same<typename std::remove_const<InIt>::type,
+                 value_type*>::value, const A>::type & /*a*/ = A()) {
+    assign(begin, end);
+  }
+
+  // Specialization for const char*, const char*
+  basic_fbstring(const value_type* b, const value_type* e)
+      : store_(b, e - b) {
+  }
+
+  // Nonstandard constructor
+  basic_fbstring(value_type *s, size_type n, size_type c,
+                 AcquireMallocatedString a)
+      : store_(s, n, c, a) {
+  }
+
+  // Construction from initialization list
+  basic_fbstring(std::initializer_list<value_type> il) {
+    assign(il.begin(), il.end());
+  }
+
+  ~basic_fbstring() noexcept {
+  }
+
+  basic_fbstring& operator=(const basic_fbstring& lhs) {
+    Invariant checker(*this);
+
+    if (FBSTRING_UNLIKELY(&lhs == this)) {
+      return *this;
+    }
+    auto const oldSize = size();
+    auto const srcSize = lhs.size();
+    if (capacity() >= srcSize && !store_.isShared()) {
+      // great, just copy the contents
+      if (oldSize < srcSize) {
+        store_.expand_noinit(srcSize - oldSize);
+      } else {
+        store_.shrink(oldSize - srcSize);
+      }
+      assert(size() == srcSize);
+      auto srcData = lhs.data();
+      fbstring_detail::pod_copy(
+          srcData, srcData + srcSize, store_.mutable_data());
+    } else {
+      // need to reallocate, so we may as well create a brand new string
+      basic_fbstring(lhs).swap(*this);
+    }
+    return *this;
+  }
+
+  // Move assignment
+  basic_fbstring& operator=(basic_fbstring&& goner) noexcept {
+    if (FBSTRING_UNLIKELY(&goner == this)) {
+      // Compatibility with std::basic_string<>,
+      // C++11 21.4.2 [string.cons] / 23 requires self-move-assignment support.
+      return *this;
+    }
+    // No need of this anymore
+    this->~basic_fbstring();
+    // Move the goner into this
+    new(&store_) fbstring_core<E>(std::move(goner.store_));
+    return *this;
+  }
+
+#ifndef _LIBSTDCXX_FBSTRING
+  // Compatibility with std::string
+  basic_fbstring & operator=(const std::string & rhs) {
+    return assign(rhs.data(), rhs.size());
+  }
+
+  // Compatibility with std::string
+  std::string toStdString() const {
+    return std::string(data(), size());
+  }
+#else
+  // A lot of code in fbcode still uses this method, so keep it here for now.
+  const basic_fbstring& toStdString() const {
+    return *this;
+  }
+#endif
+
+  basic_fbstring& operator=(const value_type* s) {
+    return assign(s);
+  }
+
+  basic_fbstring& operator=(value_type c) {
+    Invariant checker(*this);
+
+    if (empty()) {
+      store_.expand_noinit(1);
+    } else if (store_.isShared()) {
+      basic_fbstring(1, c).swap(*this);
+      return *this;
+    } else {
+      store_.shrink(size() - 1);
+    }
+    front() = c;
+    return *this;
+  }
+
+  basic_fbstring& operator=(std::initializer_list<value_type> il) {
+    return assign(il.begin(), il.end());
+  }
+
+  // C++11 21.4.3 iterators:
+  iterator begin() { return store_.mutable_data(); }
+
+  const_iterator begin() const { return store_.data(); }
+
+  const_iterator cbegin() const { return begin(); }
+
+  iterator end() {
+    return store_.mutable_data() + store_.size();
+  }
+
+  const_iterator end() const {
+    return store_.data() + store_.size();
+  }
+
+  const_iterator cend() const { return end(); }
+
+  reverse_iterator rbegin() {
+    return reverse_iterator(end());
+  }
+
+  const_reverse_iterator rbegin() const {
+    return const_reverse_iterator(end());
+  }
+
+  const_reverse_iterator crbegin() const { return rbegin(); }
+
+  reverse_iterator rend() {
+    return reverse_iterator(begin());
+  }
+
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(begin());
+  }
+
+  const_reverse_iterator crend() const { return rend(); }
+
+  // Added by C++11
+  // C++11 21.4.5, element access:
+  const value_type& front() const { return *begin(); }
+  const value_type& back() const {
+    assert(!empty());
+    // Should be begin()[size() - 1], but that branches twice
+    return *(end() - 1);
+  }
+  value_type& front() { return *begin(); }
+  value_type& back() {
+    assert(!empty());
+    // Should be begin()[size() - 1], but that branches twice
+    return *(end() - 1);
+  }
+  void pop_back() {
+    assert(!empty());
+    store_.shrink(1);
+  }
+
+  // C++11 21.4.4 capacity:
+  size_type size() const { return store_.size(); }
+
+  size_type length() const { return size(); }
+
+  size_type max_size() const {
+    return std::numeric_limits<size_type>::max();
+  }
+
+  void resize(const size_type n, const value_type c = value_type()) {
+    Invariant checker(*this);
+
+    auto size = this->size();
+    if (n <= size) {
+      store_.shrink(size - n);
+    } else {
+      auto const delta = n - size;
+      auto pData = store_.expand_noinit(delta);
+      fbstring_detail::pod_fill(pData, pData + delta, c);
+    }
+    assert(this->size() == n);
+  }
+
+  size_type capacity() const { return store_.capacity(); }
+
+  void reserve(size_type res_arg = 0) {
+    enforce(res_arg <= max_size(), std::__throw_length_error, "");
+    store_.reserve(res_arg);
+  }
+
+  void shrink_to_fit() {
+    // Shrink only if slack memory is sufficiently large
+    if (capacity() < size() * 3 / 2) {
+      return;
+    }
+    basic_fbstring(cbegin(), cend()).swap(*this);
+  }
+
+  void clear() { resize(0); }
+
+  bool empty() const { return size() == 0; }
+
+  // C++11 21.4.5 element access:
+  const_reference operator[](size_type pos) const {
+    return *(begin() + pos);
+  }
+
+  reference operator[](size_type pos) {
+    return *(begin() + pos);
+  }
+
+  const_reference at(size_type n) const {
+    enforce(n <= size(), std::__throw_out_of_range, "");
+    return (*this)[n];
+  }
+
+  reference at(size_type n) {
+    enforce(n < size(), std::__throw_out_of_range, "");
+    return (*this)[n];
+  }
+
+  // C++11 21.4.6 modifiers:
+  basic_fbstring& operator+=(const basic_fbstring& str) {
+    return append(str);
+  }
+
+  basic_fbstring& operator+=(const value_type* s) {
+    return append(s);
+  }
+
+  basic_fbstring& operator+=(const value_type c) {
+    push_back(c);
+    return *this;
+  }
+
+  basic_fbstring& operator+=(std::initializer_list<value_type> il) {
+    append(il);
+    return *this;
+  }
+
+  basic_fbstring& append(const basic_fbstring& str) {
+#ifndef NDEBUG
+    auto desiredSize = size() + str.size();
+#endif
+    append(str.data(), str.size());
+    assert(size() == desiredSize);
+    return *this;
+  }
+
+  basic_fbstring& append(const basic_fbstring& str, const size_type pos,
+                         size_type n) {
+    const size_type sz = str.size();
+    enforce(pos <= sz, std::__throw_out_of_range, "");
+    procrustes(n, sz - pos);
+    return append(str.data() + pos, n);
+  }
+
+  basic_fbstring& append(const value_type* s, size_type n) {
+    Invariant checker(*this);
+
+    if (FBSTRING_UNLIKELY(!n)) {
+      // Unlikely but must be done
+      return *this;
+    }
+    auto const oldSize = size();
+    auto const oldData = data();
+    // Check for aliasing (rare). We could use "<=" here but in theory
+    // those do not work for pointers unless the pointers point to
+    // elements in the same array. For that reason we use
+    // std::less_equal, which is guaranteed to offer a total order
+    // over pointers. See discussion at http://goo.gl/Cy2ya for more
+    // info.
+    std::less_equal<const value_type*> le;
+    if (FBSTRING_UNLIKELY(le(oldData, s) && !le(oldData + oldSize, s))) {
+      assert(le(s + n, oldData + oldSize));
+      const size_type offset = s - oldData;
+      store_.reserve(oldSize + n);
+      // Restore the source
+      s = data() + offset;
+    }
+
+    fbstring_detail::pod_copy(
+        s, s + n, store_.expand_noinit(n, /* expGrowth */ true));
+    assert(size() == oldSize + n);
+    return *this;
+  }
+
+  basic_fbstring& append(const value_type* s) {
+    return append(s, traits_type::length(s));
+  }
+
+  basic_fbstring& append(size_type n, value_type c) {
+    resize(size() + n, c);
+    return *this;
+  }
+
+  template<class InputIterator>
+  basic_fbstring& append(InputIterator first, InputIterator last) {
+    insert(end(), first, last);
+    return *this;
+  }
+
+  basic_fbstring& append(std::initializer_list<value_type> il) {
+    return append(il.begin(), il.end());
+  }
+
+  void push_back(const value_type c) {             // primitive
+    store_.push_back(c);
+  }
+
+  basic_fbstring& assign(const basic_fbstring& str) {
+    if (&str == this) return *this;
+    return assign(str.data(), str.size());
+  }
+
+  basic_fbstring& assign(basic_fbstring&& str) {
+    return *this = std::move(str);
+  }
+
+  basic_fbstring& assign(const basic_fbstring& str, const size_type pos,
+                         size_type n) {
+    const size_type sz = str.size();
+    enforce(pos <= sz, std::__throw_out_of_range, "");
+    procrustes(n, sz - pos);
+    return assign(str.data() + pos, n);
+  }
+
+  basic_fbstring& assign(const value_type* s, const size_type n) {
+    Invariant checker(*this);
+
+    // s can alias this, we need to use pod_move.
+    if (size() >= n) {
+      fbstring_detail::pod_move(s, s + n, store_.mutable_data());
+      resize(n);
+      assert(size() == n);
+    } else {
+      const value_type *const s2 = s + size();
+      fbstring_detail::pod_move(s, s2, store_.mutable_data());
+      append(s2, n - size());
+      assert(size() == n);
+    }
+    assert(size() == n);
+    return *this;
+  }
+
+  basic_fbstring& assign(const value_type* s) {
+    return assign(s, traits_type::length(s));
+  }
+
+  basic_fbstring& assign(std::initializer_list<value_type> il) {
+    return assign(il.begin(), il.end());
+  }
+
+  template <class ItOrLength, class ItOrChar>
+  basic_fbstring& assign(ItOrLength first_or_n, ItOrChar last_or_c) {
+    return replace(begin(), end(), first_or_n, last_or_c);
+  }
+
+  basic_fbstring& insert(size_type pos1, const basic_fbstring& str) {
+    return insert(pos1, str.data(), str.size());
+  }
+
+  basic_fbstring& insert(size_type pos1, const basic_fbstring& str,
+                         size_type pos2, size_type n) {
+    enforce(pos2 <= str.length(), std::__throw_out_of_range, "");
+    procrustes(n, str.length() - pos2);
+    return insert(pos1, str.data() + pos2, n);
+  }
+
+  basic_fbstring& insert(size_type pos, const value_type* s, size_type n) {
+    enforce(pos <= length(), std::__throw_out_of_range, "");
+    insert(begin() + pos, s, s + n);
+    return *this;
+  }
+
+  basic_fbstring& insert(size_type pos, const value_type* s) {
+    return insert(pos, s, traits_type::length(s));
+  }
+
+  basic_fbstring& insert(size_type pos, size_type n, value_type c) {
+    enforce(pos <= length(), std::__throw_out_of_range, "");
+    insert(begin() + pos, n, c);
+    return *this;
+  }
+
+  iterator insert(const_iterator p, const value_type c) {
+    const size_type pos = p - begin();
+    insert(p, 1, c);
+    return begin() + pos;
+  }
+
+#ifndef _LIBSTDCXX_FBSTRING
+ private:
+  typedef std::basic_istream<value_type, traits_type> istream_type;
+
+ public:
+  friend inline istream_type& getline(istream_type& is,
+                                      basic_fbstring& str,
+                                      value_type delim) {
+    Invariant checker(str);
+
+    str.clear();
+    size_t size = 0;
+    while (true) {
+      size_t avail = str.capacity() - size;
+      // fbstring has 1 byte extra capacity for the null terminator,
+      // and getline null-terminates the read string.
+      is.getline(str.store_.expand_noinit(avail), avail + 1, delim);
+      size += is.gcount();
+
+      if (is.bad() || is.eof() || !is.fail()) {
+        // Done by either failure, end of file, or normal read.
+        if (!is.bad() && !is.eof()) {
+          --size; // gcount() also accounts for the delimiter.
+        }
+        str.resize(size);
+        break;
+      }
+
+      assert(size == str.size());
+      assert(size == str.capacity());
+      // Start at minimum allocation 63 + terminator = 64.
+      str.reserve(std::max<size_t>(63, 3 * size / 2));
+      // Clear the error so we can continue reading.
+      is.clear();
+    }
+    return is;
+  }
+
+  friend inline istream_type& getline(istream_type& is, basic_fbstring& str) {
+    return getline(is, str, '\n');
+  }
+#endif
+
+private:
+  template <int i> class Selector {};
+
+  iterator insertImplDiscr(const_iterator p,
+                           size_type n, value_type c, Selector<1>) {
+    Invariant checker(*this);
+
+    auto const pos = p - begin();
+    assert(p >= begin() && p <= end());
+    if (capacity() - size() < n) {
+      const size_type sz = p - begin();
+      reserve(size() + n);
+      p = begin() + sz;
+    }
+    const iterator oldEnd = end();
+    if (n < size_type(oldEnd - p)) {
+      append(oldEnd - n, oldEnd);
+      // Also copies terminator.
+      fbstring_detail::pod_move(&*p, &*oldEnd - n + 1, begin() + pos + n);
+      std::fill(begin() + pos, begin() + pos + n, c);
+    } else {
+      append(n - (end() - p), c);
+      append(iterator(p), oldEnd);
+      std::fill(iterator(p), oldEnd, c);
+    }
+    return begin() + pos;
+  }
+
+  template<class InputIter>
+  iterator insertImplDiscr(const_iterator i,
+                           InputIter b, InputIter e, Selector<0>) {
+    return insertImpl(i, b, e,
+               typename std::iterator_traits<InputIter>::iterator_category());
+  }
+
+  template <class FwdIterator>
+  iterator insertImpl(const_iterator i,
+                  FwdIterator s1, FwdIterator s2, std::forward_iterator_tag) {
+    Invariant checker(*this);
+
+    const size_type pos = i - begin();
+    const typename std::iterator_traits<FwdIterator>::difference_type n2 =
+      std::distance(s1, s2);
+    assert(n2 >= 0);
+    using namespace fbstring_detail;
+    assert(pos <= size());
+
+    const typename std::iterator_traits<FwdIterator>::difference_type maxn2 =
+      capacity() - size();
+    if (maxn2 < n2) {
+      // realloc the string
+      reserve(size() + n2);
+      i = begin() + pos;
+    }
+    if (pos + n2 <= size()) {
+      const iterator tailBegin = end() - n2;
+      store_.expand_noinit(n2);
+      fbstring_detail::pod_copy(tailBegin, tailBegin + n2, end() - n2);
+      std::copy(const_reverse_iterator(tailBegin), const_reverse_iterator(i),
+                reverse_iterator(tailBegin + n2));
+      std::copy(s1, s2, begin() + pos);
+    } else {
+      FwdIterator t = s1;
+      const size_type old_size = size();
+      std::advance(t, old_size - pos);
+      const size_t newElems = std::distance(t, s2);
+      store_.expand_noinit(n2);
+      std::copy(t, s2, begin() + old_size);
+      fbstring_detail::pod_copy(data() + pos, data() + old_size,
+                                 begin() + old_size + newElems);
+      std::copy(s1, t, begin() + pos);
+    }
+    return begin() + pos;
+  }
+
+  template <class InputIterator>
+  iterator insertImpl(const_iterator i,
+                      InputIterator b, InputIterator e,
+                      std::input_iterator_tag) {
+    const auto pos = i - begin();
+    basic_fbstring temp(begin(), i);
+    for (; b != e; ++b) {
+      temp.push_back(*b);
+    }
+    temp.append(i, cend());
+    swap(temp);
+    return begin() + pos;
+  }
+
+public:
+  template <class ItOrLength, class ItOrChar>
+  iterator insert(const_iterator p, ItOrLength first_or_n, ItOrChar last_or_c) {
+    Selector<std::numeric_limits<ItOrLength>::is_specialized> sel;
+    return insertImplDiscr(p, first_or_n, last_or_c, sel);
+  }
+
+  iterator insert(const_iterator p, std::initializer_list<value_type> il) {
+    return insert(p, il.begin(), il.end());
+  }
+
+  basic_fbstring& erase(size_type pos = 0, size_type n = npos) {
+    Invariant checker(*this);
+
+    enforce(pos <= length(), std::__throw_out_of_range, "");
+    procrustes(n, length() - pos);
+    std::copy(begin() + pos + n, end(), begin() + pos);
+    resize(length() - n);
+    return *this;
+  }
+
+  iterator erase(iterator position) {
+    const size_type pos(position - begin());
+    enforce(pos <= size(), std::__throw_out_of_range, "");
+    erase(pos, 1);
+    return begin() + pos;
+  }
+
+  iterator erase(iterator first, iterator last) {
+    const size_type pos(first - begin());
+    erase(pos, last - first);
+    return begin() + pos;
+  }
+
+  // Replaces at most n1 chars of *this, starting with pos1 with the
+  // content of str
+  basic_fbstring& replace(size_type pos1, size_type n1,
+                          const basic_fbstring& str) {
+    return replace(pos1, n1, str.data(), str.size());
+  }
+
+  // Replaces at most n1 chars of *this, starting with pos1,
+  // with at most n2 chars of str starting with pos2
+  basic_fbstring& replace(size_type pos1, size_type n1,
+                          const basic_fbstring& str,
+                          size_type pos2, size_type n2) {
+    enforce(pos2 <= str.length(), std::__throw_out_of_range, "");
+    return replace(pos1, n1, str.data() + pos2,
+                   std::min(n2, str.size() - pos2));
+  }
+
+  // Replaces at most n1 chars of *this, starting with pos, with chars from s
+  basic_fbstring& replace(size_type pos, size_type n1, const value_type* s) {
+    return replace(pos, n1, s, traits_type::length(s));
+  }
+
+  // Replaces at most n1 chars of *this, starting with pos, with n2
+  // occurrences of c
+  //
+  // consolidated with
+  //
+  // Replaces at most n1 chars of *this, starting with pos, with at
+  // most n2 chars of str.  str must have at least n2 chars.
+  template <class StrOrLength, class NumOrChar>
+  basic_fbstring& replace(size_type pos, size_type n1,
+                          StrOrLength s_or_n2, NumOrChar n_or_c) {
+    Invariant checker(*this);
+
+    enforce(pos <= size(), std::__throw_out_of_range, "");
+    procrustes(n1, length() - pos);
+    const iterator b = begin() + pos;
+    return replace(b, b + n1, s_or_n2, n_or_c);
+  }
+
+  basic_fbstring& replace(iterator i1, iterator i2, const basic_fbstring& str) {
+    return replace(i1, i2, str.data(), str.length());
+  }
+
+  basic_fbstring& replace(iterator i1, iterator i2, const value_type* s) {
+    return replace(i1, i2, s, traits_type::length(s));
+  }
 
 private:
   basic_fbstring& replaceImplDiscr(iterator i1, iterator i2,
@@ -1318,3 +2035,465 @@ private:
   // Data
   Storage store_;
 };
+
+// non-member functions
+// C++11 21.4.8.1/1
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(const basic_fbstring<E, T, A, S>& lhs,
+                                     const basic_fbstring<E, T, A, S>& rhs) {
+
+  basic_fbstring<E, T, A, S> result;
+  result.reserve(lhs.size() + rhs.size());
+  result.append(lhs).append(rhs);
+  return std::move(result);
+}
+
+// C++11 21.4.8.1/2
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(basic_fbstring<E, T, A, S>&& lhs,
+                                     const basic_fbstring<E, T, A, S>& rhs) {
+  return std::move(lhs.append(rhs));
+}
+
+// C++11 21.4.8.1/3
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(const basic_fbstring<E, T, A, S>& lhs,
+                                     basic_fbstring<E, T, A, S>&& rhs) {
+  if (rhs.capacity() >= lhs.size() + rhs.size()) {
+    // Good, at least we don't need to reallocate
+    return std::move(rhs.insert(0, lhs));
+  }
+  // Meh, no go. Forward to operator+(const&, const&).
+  auto const& rhsC = rhs;
+  return lhs + rhsC;
+}
+
+// C++11 21.4.8.1/4
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(basic_fbstring<E, T, A, S>&& lhs,
+                                     basic_fbstring<E, T, A, S>&& rhs) {
+  return std::move(lhs.append(rhs));
+}
+
+// C++11 21.4.8.1/5
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  const E* lhs,
+  const basic_fbstring<E, T, A, S>& rhs) {
+  //
+  basic_fbstring<E, T, A, S> result;
+  const auto len = basic_fbstring<E, T, A, S>::traits_type::length(lhs);
+  result.reserve(len + rhs.size());
+  result.append(lhs, len).append(rhs);
+  return result;
+}
+
+// C++11 21.4.8.1/6
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  const E* lhs,
+  basic_fbstring<E, T, A, S>&& rhs) {
+  //
+  const auto len = basic_fbstring<E, T, A, S>::traits_type::length(lhs);
+  if (rhs.capacity() >= len + rhs.size()) {
+    // Good, at least we don't need to reallocate
+    rhs.insert(rhs.begin(), lhs, lhs + len);
+    return rhs;
+  }
+  // Meh, no go. Do it by hand since we have len already.
+  basic_fbstring<E, T, A, S> result;
+  result.reserve(len + rhs.size());
+  result.append(lhs, len).append(rhs);
+  return result;
+}
+
+// C++11 21.4.8.1/7
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  E lhs,
+  const basic_fbstring<E, T, A, S>& rhs) {
+
+  basic_fbstring<E, T, A, S> result;
+  result.reserve(1 + rhs.size());
+  result.push_back(lhs);
+  result.append(rhs);
+  return result;
+}
+
+// C++11 21.4.8.1/8
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  E lhs,
+  basic_fbstring<E, T, A, S>&& rhs) {
+  //
+  if (rhs.capacity() > rhs.size()) {
+    // Good, at least we don't need to reallocate
+    rhs.insert(rhs.begin(), lhs);
+    return rhs;
+  }
+  // Meh, no go. Forward to operator+(E, const&).
+  auto const& rhsC = rhs;
+  return lhs + rhsC;
+}
+
+// C++11 21.4.8.1/9
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  const basic_fbstring<E, T, A, S>& lhs,
+  const E* rhs) {
+
+  typedef typename basic_fbstring<E, T, A, S>::size_type size_type;
+  typedef typename basic_fbstring<E, T, A, S>::traits_type traits_type;
+
+  basic_fbstring<E, T, A, S> result;
+  const size_type len = traits_type::length(rhs);
+  result.reserve(lhs.size() + len);
+  result.append(lhs).append(rhs, len);
+  return result;
+}
+
+// C++11 21.4.8.1/10
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  basic_fbstring<E, T, A, S>&& lhs,
+  const E* rhs) {
+  //
+  return std::move(lhs += rhs);
+}
+
+// C++11 21.4.8.1/11
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  const basic_fbstring<E, T, A, S>& lhs,
+  E rhs) {
+
+  basic_fbstring<E, T, A, S> result;
+  result.reserve(lhs.size() + 1);
+  result.append(lhs);
+  result.push_back(rhs);
+  return result;
+}
+
+// C++11 21.4.8.1/12
+template <typename E, class T, class A, class S>
+inline
+basic_fbstring<E, T, A, S> operator+(
+  basic_fbstring<E, T, A, S>&& lhs,
+  E rhs) {
+  //
+  return std::move(lhs += rhs);
+}
+
+template <typename E, class T, class A, class S>
+inline
+bool operator==(const basic_fbstring<E, T, A, S>& lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return lhs.size() == rhs.size() && lhs.compare(rhs) == 0; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator==(const typename basic_fbstring<E, T, A, S>::value_type* lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return rhs == lhs; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator==(const basic_fbstring<E, T, A, S>& lhs,
+                const typename basic_fbstring<E, T, A, S>::value_type* rhs) {
+  return lhs.compare(rhs) == 0; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator!=(const basic_fbstring<E, T, A, S>& lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return !(lhs == rhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator!=(const typename basic_fbstring<E, T, A, S>::value_type* lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return !(lhs == rhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator!=(const basic_fbstring<E, T, A, S>& lhs,
+                const typename basic_fbstring<E, T, A, S>::value_type* rhs) {
+  return !(lhs == rhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator<(const basic_fbstring<E, T, A, S>& lhs,
+               const basic_fbstring<E, T, A, S>& rhs) {
+  return lhs.compare(rhs) < 0; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator<(const basic_fbstring<E, T, A, S>& lhs,
+               const typename basic_fbstring<E, T, A, S>::value_type* rhs) {
+  return lhs.compare(rhs) < 0; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator<(const typename basic_fbstring<E, T, A, S>::value_type* lhs,
+               const basic_fbstring<E, T, A, S>& rhs) {
+  return rhs.compare(lhs) > 0; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator>(const basic_fbstring<E, T, A, S>& lhs,
+               const basic_fbstring<E, T, A, S>& rhs) {
+  return rhs < lhs; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator>(const basic_fbstring<E, T, A, S>& lhs,
+               const typename basic_fbstring<E, T, A, S>::value_type* rhs) {
+  return rhs < lhs; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator>(const typename basic_fbstring<E, T, A, S>::value_type* lhs,
+               const basic_fbstring<E, T, A, S>& rhs) {
+  return rhs < lhs; }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator<=(const basic_fbstring<E, T, A, S>& lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return !(rhs < lhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator<=(const basic_fbstring<E, T, A, S>& lhs,
+                const typename basic_fbstring<E, T, A, S>::value_type* rhs) {
+  return !(rhs < lhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator<=(const typename basic_fbstring<E, T, A, S>::value_type* lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return !(rhs < lhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator>=(const basic_fbstring<E, T, A, S>& lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return !(lhs < rhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator>=(const basic_fbstring<E, T, A, S>& lhs,
+                const typename basic_fbstring<E, T, A, S>::value_type* rhs) {
+  return !(lhs < rhs); }
+
+template <typename E, class T, class A, class S>
+inline
+bool operator>=(const typename basic_fbstring<E, T, A, S>::value_type* lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+ return !(lhs < rhs);
+}
+
+// C++11 21.4.8.8
+template <typename E, class T, class A, class S>
+void swap(basic_fbstring<E, T, A, S>& lhs, basic_fbstring<E, T, A, S>& rhs) {
+  lhs.swap(rhs);
+}
+
+// TODO: make this faster.
+template <typename E, class T, class A, class S>
+inline
+std::basic_istream<
+  typename basic_fbstring<E, T, A, S>::value_type,
+  typename basic_fbstring<E, T, A, S>::traits_type>&
+  operator>>(
+    std::basic_istream<typename basic_fbstring<E, T, A, S>::value_type,
+    typename basic_fbstring<E, T, A, S>::traits_type>& is,
+    basic_fbstring<E, T, A, S>& str) {
+  typename std::basic_istream<E, T>::sentry sentry(is);
+  typedef std::basic_istream<typename basic_fbstring<E, T, A, S>::value_type,
+                             typename basic_fbstring<E, T, A, S>::traits_type>
+                        __istream_type;
+  typedef typename __istream_type::ios_base __ios_base;
+  size_t extracted = 0;
+  auto err = __ios_base::goodbit;
+  if (sentry) {
+    auto n = is.width();
+    if (n <= 0) {
+      n = str.max_size();
+    }
+    str.erase();
+    for (auto got = is.rdbuf()->sgetc(); extracted != size_t(n); ++extracted) {
+      if (got == T::eof()) {
+        err |= __ios_base::eofbit;
+        is.width(0);
+        break;
+      }
+      if (isspace(got)) break;
+      str.push_back(got);
+      got = is.rdbuf()->snextc();
+    }
+  }
+  if (!extracted) {
+    err |= __ios_base::failbit;
+  }
+  if (err) {
+    is.setstate(err);
+  }
+  return is;
+}
+
+template <typename E, class T, class A, class S>
+inline
+std::basic_ostream<typename basic_fbstring<E, T, A, S>::value_type,
+                   typename basic_fbstring<E, T, A, S>::traits_type>&
+operator<<(
+  std::basic_ostream<typename basic_fbstring<E, T, A, S>::value_type,
+  typename basic_fbstring<E, T, A, S>::traits_type>& os,
+    const basic_fbstring<E, T, A, S>& str) {
+#if _LIBCPP_VERSION
+  typename std::basic_ostream<
+    typename basic_fbstring<E, T, A, S>::value_type,
+    typename basic_fbstring<E, T, A, S>::traits_type>::sentry __s(os);
+  if (__s) {
+    typedef std::ostreambuf_iterator<
+      typename basic_fbstring<E, T, A, S>::value_type,
+      typename basic_fbstring<E, T, A, S>::traits_type> _Ip;
+    size_t __len = str.size();
+    bool __left =
+      (os.flags() & std::ios_base::adjustfield) == std::ios_base::left;
+    if (__pad_and_output(_Ip(os),
+                         str.data(),
+                         __left ? str.data() + __len : str.data(),
+                         str.data() + __len,
+                         os,
+                         os.fill()).failed()) {
+      os.setstate(std::ios_base::badbit | std::ios_base::failbit);
+    }
+  }
+#elif defined(_MSC_VER)
+  // MSVC doesn't define __ostream_insert
+  os.write(str.data(), str.size());
+#else
+  std::__ostream_insert(os, str.data(), str.size());
+#endif
+  return os;
+}
+
+template <typename E1, class T, class A, class S>
+const typename basic_fbstring<E1, T, A, S>::size_type
+basic_fbstring<E1, T, A, S>::npos =
+              static_cast<typename basic_fbstring<E1, T, A, S>::size_type>(-1);
+
+#ifndef _LIBSTDCXX_FBSTRING
+// basic_string compatibility routines
+
+template <typename E, class T, class A, class S>
+inline
+bool operator==(const basic_fbstring<E, T, A, S>& lhs,
+                const std::string& rhs) {
+  return lhs.compare(0, lhs.size(), rhs.data(), rhs.size()) == 0;
+}
+
+template <typename E, class T, class A, class S>
+inline
+bool operator==(const std::string& lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return rhs == lhs;
+}
+
+template <typename E, class T, class A, class S>
+inline
+bool operator!=(const basic_fbstring<E, T, A, S>& lhs,
+                const std::string& rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename E, class T, class A, class S>
+inline
+bool operator!=(const std::string& lhs,
+                const basic_fbstring<E, T, A, S>& rhs) {
+  return !(lhs == rhs);
+}
+
+#if !defined(_LIBSTDCXX_FBSTRING)
+typedef basic_fbstring<char> fbstring;
+#endif
+
+// fbstring is relocatable
+template <class T, class R, class A, class S>
+FOLLY_ASSUME_RELOCATABLE(basic_fbstring<T, R, A, S>);
+
+#else
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif
+
+} // namespace folly
+
+#ifndef _LIBSTDCXX_FBSTRING
+
+// Hash functions to make fbstring usable with e.g. hash_map
+//
+// Handle interaction with different C++ standard libraries, which
+// expect these types to be in different namespaces.
+
+#define FOLLY_FBSTRING_HASH1(T) \
+  template <> \
+  struct hash< ::folly::basic_fbstring<T> > { \
+    size_t operator()(const ::folly::fbstring& s) const { \
+      return ::folly::hash::fnv32_buf(s.data(), s.size()); \
+    } \
+  };
+
+// The C++11 standard says that these four are defined
+#define FOLLY_FBSTRING_HASH \
+  FOLLY_FBSTRING_HASH1(char) \
+  FOLLY_FBSTRING_HASH1(char16_t) \
+  FOLLY_FBSTRING_HASH1(char32_t) \
+  FOLLY_FBSTRING_HASH1(wchar_t)
+
+namespace std {
+
+FOLLY_FBSTRING_HASH
+
+}  // namespace std
+
+#if FOLLY_HAVE_DEPRECATED_ASSOC
+#if defined(_GLIBCXX_SYMVER) && !defined(__BIONIC__)
+namespace __gnu_cxx {
+
+FOLLY_FBSTRING_HASH
+
+}  // namespace __gnu_cxx
+#endif // _GLIBCXX_SYMVER && !__BIONIC__
+#endif // FOLLY_HAVE_DEPRECATED_ASSOC
+
+#undef FOLLY_FBSTRING_HASH
+#undef FOLLY_FBSTRING_HASH1
+
+#endif // _LIBSTDCXX_FBSTRING
+
+#pragma GCC diagnostic pop
+
+#undef FBSTRING_DISABLE_ADDRESS_SANITIZER
+#undef throw
+#undef FBSTRING_LIKELY
+#undef FBSTRING_UNLIKELY
+
+#ifdef FOLLY_DEFINED_NDEBUG_FOR_FBSTRING
+#undef NDEBUG
+#undef FOLLY_DEFINED_NDEBUG_FOR_FBSTRING
+#endif // FOLLY_DEFINED_NDEBUG_FOR_FBSTRING
+
+#endif // FOLLY_BASE_FBSTRING_H_
+

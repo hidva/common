@@ -3,8 +3,22 @@
 
 // 此处实现了参考了 Facebook/folly 中 FBString 的实现
 
+
+/* 在实现过程中,注意以下问题:
+
+**注意** 延迟加'\0'的问题.
+**注意** expand_noinit() 不再会追加0.
+**注意** raw_data(),const_raw_data();data(),4142041420412021514625362
+
+
+    1. 在调用 data() 时,根据情况转化为 cdata(),raw_data();
+    2. 在调用 expand_noinit() 时需要注意末尾不再保证 0!
+    3. begin(),end() 与 cbegin(),cend();
+
+
+ */
+
 #include <string>
-#include "exception/errno_exception.h"
 
 #if defined(__GNUC__) && __GNUC__ >= 4
 #define FBSTRING_LIKELY(x)   (__builtin_expect((x), 1))
@@ -20,7 +34,7 @@ namespace fbstring_detail {
 
 template <class InIt, class OutIt>
 inline OutIt
-copy_n(InIt b,typename std::iterator_traits<InIt>::difference_type n,OutIt d)
+CopyN(InIt b,typename std::iterator_traits<InIt>::difference_type n,OutIt d)
 {
     for (; n != 0; --n, ++b, ++d)
         *d = *b;
@@ -29,7 +43,7 @@ copy_n(InIt b,typename std::iterator_traits<InIt>::difference_type n,OutIt d)
 
 template <class Pod, class T>
 inline void
-pod_fill(Pod* b, Pod* e, T c)
+PodFill(Pod* b, Pod* e, T c)
 {
     if (sizeof(T) == 1) {
         memset(b, c, e - b);
@@ -222,75 +236,79 @@ public:
     template <class T1, class T2>
     inline FBStringBasic& replace(iterator i1, iterator i2,T1 first_or_n_or_s, T2 last_or_c_or_n);
 
-    size_type copy(value_type* s, size_type n, size_type pos = 0) const;
+    inline size_type copy(value_type* s, size_type n, size_type pos = 0) const;
 
-    void swap(FBStringBasic& rhs);
+    inline void swap(FBStringBasic& rhs);
 
-    const value_type* c_str() const;
+    inline const value_type* c_str() const;
 
-    value_type* data();
-    const value_type* data() const;
-    const value_type* cdata() const;
+    inline value_type* data();
+    inline const value_type* data() const;
+    inline const value_type* cdata() const;
 
-    value_type* raw_data();
-    const value_type* raw_data() const;
-    const value_type* const_raw_data() const;
+    inline value_type* raw_data();
+    inline const value_type* raw_data() const;
+    inline const value_type* const_raw_data() const;
 
+    inline allocator_type get_allocator() const;
 
-    allocator_type get_allocator() const;
-
-    size_type find(const FBStringBasic& str, size_type pos = 0) const;
+    inline size_type find(const FBStringBasic& str, size_type pos = 0) const;
     size_type find(const value_type* needle, const size_type pos,const size_type nsize) const;
-    size_type find(const value_type* s, size_type pos = 0) const ;
-    size_type find (value_type c, size_type pos = 0) const;
+    inline size_type find(const value_type* s, size_type pos = 0) const ;
+    inline size_type find (value_type c, size_type pos = 0) const;
 
-    size_type rfind(const FBStringBasic& str, size_type pos = npos) const;
+    inline size_type rfind(const FBStringBasic& str, size_type pos = npos) const;
     size_type rfind(const value_type* s, size_type pos, size_type n) const;
-    size_type rfind(const value_type* s, size_type pos = npos) const;
-    size_type rfind(value_type c, size_type pos = npos) const;
+    inline size_type rfind(const value_type* s, size_type pos = npos) const;
+    inline size_type rfind(value_type c, size_type pos = npos) const;
 
-    size_type find_first_of(const FBStringBasic& str, size_type pos = 0) const;
+    inline size_type find_first_of(const FBStringBasic& str, size_type pos = 0) const;
     size_type find_first_of(const value_type* s,size_type pos, size_type n) const;
-    size_type find_first_of(const value_type* s, size_type pos = 0) const;
-    size_type find_first_of(value_type c, size_type pos = 0) const;
+    inline size_type find_first_of(const value_type* s, size_type pos = 0) const;
+    inline size_type find_first_of(value_type c, size_type pos = 0) const;
 
-    size_type find_last_of (const FBStringBasic& str,size_type pos = npos) const;
+    inline size_type find_last_of (const FBStringBasic& str,size_type pos = npos) const;
     size_type find_last_of (const value_type* s, size_type pos,size_type n) const;
-    size_type find_last_of (const value_type* s,size_type pos = npos) const;
-    size_type find_last_of (value_type c, size_type pos = npos) const;
+    inline size_type find_last_of (const value_type* s,size_type pos = npos) const;
+    inline size_type find_last_of (value_type c, size_type pos = npos) const;
 
-    size_type find_first_not_of(const FBStringBasic& str,size_type pos = 0) const;
+    inline size_type find_first_not_of(const FBStringBasic& str,size_type pos = 0) const;
     size_type find_first_not_of(const value_type* s, size_type pos,size_type n) const;
-    size_type find_first_not_of(const value_type* s,size_type pos = 0) const;
-    size_type find_first_not_of(value_type c, size_type pos = 0) const;
+    inline size_type find_first_not_of(const value_type* s,size_type pos = 0) const;
+    inline size_type find_first_not_of(value_type c, size_type pos = 0) const;
 
-    size_type find_last_not_of(const FBStringBasic& str,size_type pos = npos) const;
+    inline size_type find_last_not_of(const FBStringBasic& str,size_type pos = npos) const;
     size_type find_last_not_of(const value_type* s, size_type pos,size_type n) const;
-    size_type find_last_not_of(const value_type* s,size_type pos = npos) const;
-    size_type find_last_not_of (value_type c, size_type pos = npos) const;
+    inline size_type find_last_not_of(const value_type* s,size_type pos = npos) const;
+    inline size_type find_last_not_of (value_type c, size_type pos = npos) const;
 
-    FBStringBasic substr(size_type pos = 0, size_type n = npos) const &;
-    FBStringBasic substr(size_type pos = 0, size_type n = npos) &&;
+    inline FBStringBasic substr(size_type pos = 0, size_type n = npos) const &;
+    inline FBStringBasic substr(size_type pos = 0, size_type n = npos) &&;
 
-    int compare(const FBStringBasic& str) const;
-    int compare(size_type pos1, size_type n1,const FBStringBasic& str) const;
-    int compare(size_type pos1, size_type n1,const value_type* s) const;
-    int compare(size_type pos1, size_type n1,const value_type* s, size_type n2) const;
-    int compare(size_type pos1, size_type n1,const FBStringBasic& str,size_type pos2, size_type n2) const;
-    int compare(const value_type* s) const;
+    inline int compare(const FBStringBasic& str) const;
+    inline int compare(size_type pos1, size_type n1,const FBStringBasic& str) const;
+    inline int compare(size_type pos1, size_type n1,const value_type* s) const;
+    inline int compare(size_type pos1, size_type n1,const value_type* s, size_type n2) const;
+    inline int compare(size_type pos1, size_type n1,const FBStringBasic& str,size_type pos2, size_type n2) const;
+    inline int compare(const value_type* s) const;
 
 private:
     template <int i>
     class Selector {};
 
+    // insert()
     iterator insertImplDiscr(const_iterator i,size_type n, value_type c, Selector<1>);
+
     template<class InputIter>
     iterator insertImplDiscr(const_iterator i,InputIter b, InputIter e, Selector<0>);
+
     template <class FwdIterator>
     iterator insertImpl(const_iterator i,FwdIterator s1,FwdIterator s2,std::forward_iterator_tag);
+
     template <class InputIterator>
     iterator insertImpl(const_iterator i,InputIterator b, InputIterator e,std::input_iterator_tag);
 
+    // replace
     inline FBStringBasic& replaceImplDiscr(iterator i1, iterator i2,const value_type* s, size_type n,Selector<2>);
 
     FBStringBasic& replaceImplDiscr(iterator i1, iterator i2,size_type n2, value_type c, Selector<1>);
@@ -622,7 +640,7 @@ template <typename E, class S, class T, class A>
 FBStringBasic<E,S,T,A>::FBStringBasic(size_type n, value_type c, const A& /*a*/ = A())
 {
     auto const ptr = store_.expand_noinit(n);
-    fbstring_detail::pod_fill(ptr, ptr + n, c);
+    fbstring_detail::PodFill(ptr, ptr + n, c);
 }
 
 template <typename E, class S, class T, class A> template <typename InIt>
@@ -675,7 +693,7 @@ auto FBStringBasic<E,S,T,A>::operator=(const FBStringBasic& lhs) -> FBStringBasi
         auto src_data = lhs.const_raw_data();
         fbstring_detail::pod_copy(src_data, src_data + src_size, store_.mutable_data());
     } else {
-        basic_fbstring(lhs).swap(*this);
+        FBStringBasic(lhs).swap(*this);
     }
     return *this;
 }
@@ -686,7 +704,7 @@ auto FBStringBasic<E,S,T,A>::operator=(FBStringBasic&& goner) noexcept -> FBStri
     if (FBSTRING_UNLIKELY(&goner == this))
         return *this;
 
-    this->~basic_fbstring();
+    this->~FBStringBasic();
     new(&store_) S(std::move(goner.store_));
     return *this;
 }
@@ -703,7 +721,7 @@ auto FBStringBasic<E,S,T,A>::operator=(value_type c) -> FBStringBasic&
     if (empty()) {
         store_.expand_noinit(1);
     } else if (store_.isShared()) {
-         basic_fbstring(1, c).swap(*this);
+         FBStringBasic(1, c).swap(*this);
          return *this;
     } else {
         store_.shrink(size() - 1);
@@ -879,7 +897,7 @@ void FBStringBasic<E,S,T,A>::resize(const size_type n, const value_type c)
     } else {
       auto const delta = n - size;
       auto ptr = store_.expand_noinit(delta);
-      fbstring_detail::pod_fill(ptr, ptr + delta, c);
+      fbstring_detail::PodFill(ptr, ptr + delta, c);
     }
     return ;
 }
@@ -1175,7 +1193,7 @@ auto FBStringBasic<E,S,T,A>::insertImplDiscr(const_iterator i,size_type n, value
     auto retval = b + pos;
 
     fbstring_detail::pod_move(retval, b + old_size, retval + n);
-    fbstring_detail::pod_fill(retval, retval + n, c);
+    fbstring_detail::PodFill(retval, retval + n, c);
 
     return retval;
 }
@@ -1207,7 +1225,7 @@ template <typename E, class S, class T, class A> template <class InputIterator>
 auto FBStringBasic<E,S,T,A>::insertImpl(const_iterator i,InputIterator b, InputIterator e,std::input_iterator_tag) -> iterator
 {
     const auto pos = i - cbegin();
-    basic_fbstring temp(cbegin(), i);
+    FBStringBasic temp(cbegin(), i);
     for (; b != e; ++b)
         temp.push_back(*b);
     temp.append(i, cend());
@@ -1354,37 +1372,448 @@ bool FBStringBasic<E,S,T,A>::replaceAliased(iterator i1, iterator i2,FwdIterator
      * 在 C++11 中,static 是线程安全的,而在 g++ 的实现中,static 采用 pthread_once 来实现,涉及到原子操作以及同步,
      * 所以我觉得这里不如直接使用局部变量了.
      */
-//    std::less_equal<const value_type*> le{};
-//    const bool aliased = le(&*cbegin(), &*s1) && le(&*s1, &*cend());
-//    if (!aliased)
-//        return false;
+    std::less_equal<const value_type*> le{};
 
-//    // Aliased replace, copy to new string
-//    basic_fbstring temp;
-//    temp.reserve(size() - (i2 - i1) + std::distance(s1, s2));
-//    temp.append(begin(), i1).append(s1, s2).append(i2, end());
-//    swap(temp);
-//    return true;
+    /* aliased 若为真,则表明 [s1,s2) 与当前字符串交集;否则表明无交集.
+     * 注意当调用此函数时,s1,s2 的类型要么是 iterator,要么是 const_iterator 类型.
+     */
+    const bool aliased = le(&*cbegin(), &*s1) && le(&*s1, &*cend());
+    if (!aliased)
+        return false;
+
+    // Aliased replace, copy to new string
+    FBStringBasic temp;
+    temp.reserve(size() - (i2 - i1) + std::distance(s1, s2));
+    temp.append(cbegin(), const_iterator{i1}).append(s1, s2).append(const_iterator{i2}, cend());
+    swap(temp);
+    return true;
 }
 
 template <typename E, class S, class T, class A> template <class FwdIterator>
 void FBStringBasic<E,S,T,A>::replaceImpl(iterator i1, iterator i2,FwdIterator s1, FwdIterator s2, std::forward_iterator_tag)
 {
+    if (replaceAliased(i1, i2, s1, s2,
+          std::integral_constant<bool,
+            std::is_same<FwdIterator, iterator>::value ||
+            std::is_same<FwdIterator, const_iterator>::value>()))
+    {
+        return;
+    }
 
+    auto const n1 = i2 - i1;
+    auto const n2 = std::distance(s1, s2);
+
+    if (n1 > n2) {
+        std::copy(s1, s2, i1);
+        erase(i1 + n2, i2);
+    } else {
+        fbstring_detail::CopyN(s1, n1, i1);
+        std::advance(s1, n1);
+        insert(i2, s1, s2);
+    }
+    return ;
 }
 
 template <typename E, class S, class T, class A> template <class InputIterator>
 void FBStringBasic<E,S,T,A>::replaceImpl(iterator i1, iterator i2,InputIterator b, InputIterator e, std::input_iterator_tag)
 {
-
+    FBStringBasic temp(cbegin(), const_iterator{i1});
+    temp.append(b, e).append(const_iterator{i2}, cend());
+    swap(temp);
+    return ;
 }
 
 template <typename E, class S, class T, class A> template <class T1, class T2>
 auto FBStringBasic<E,S,T,A>::replace(iterator i1, iterator i2,T1 first_or_n_or_s, T2 last_or_c_or_n) -> FBStringBasic&
 {
-
+    const bool num1 = std::numeric_limits<T1>::is_specialized;
+    const bool num2 = std::numeric_limits<T2>::is_specialized;
+    return replaceImplDiscr(i1, i2, first_or_n_or_s, last_or_c_or_n,
+                Selector<num1 ? (num2 ? 1 : -1) : (num2 ? 2 : 0)>{});
 }
 
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::copy(value_type* s, size_type n, size_type pos = 0) const -> size_type
+{
+    const auto left_size = size() - pos;
+    if (n > left_size)
+        n = left_size;
+
+    const value_type *copy_region_begin = const_raw_data() + pos;
+    fbstring_detail::pod_copy(copy_region_begin,copy_region_begin + n,s);
+    return n;
+}
+
+template <typename E, class S, class T, class A>
+void FBStringBasic<E,S,T,A>::swap(FBStringBasic& rhs)
+{
+    store_.swap(rhs.store_);
+    return ;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::c_str() const -> const value_type*
+{
+    return store_.c_str();
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::data() -> value_type*
+{
+    const auto current_size = store_.size();
+    store_.reserve(current_size + 1);
+    value_type *ptr = store_.mutable_data();
+    ptr[current_size] = '\0';
+    return ptr;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::data() const -> const value_type*
+{
+    return c_str();
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::cdata() const -> const value_type*
+{
+    return c_str();
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::raw_data() -> value_type*
+{
+    return store_.mutable_data();
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::raw_data() const -> const value_type*
+{
+    return store_.data();
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::const_raw_data() const -> const value_type*
+{
+    return raw_data();
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::get_allocator() const -> allocator_type
+{
+    return allocator_type();
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find(const FBStringBasic& str, size_type pos = 0) const -> size_type
+{
+    return find(str.const_raw_data(), pos, str.length());
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find(const value_type* needle, const size_type pos,const size_type nsize) const -> size_type
+{
+    if (FBSTRING_UNLIKELY(nsize == 0))
+        return pos;
+
+    auto const size = this->size();
+
+    {
+        const auto tmp = nsize + pos;
+        if (tmp > size || tmp < pos)
+            return npos;
+    }
+
+    // Don't use std::search, use a Boyer-Moore-like trick by comparing
+    // the last characters first
+    auto const haystack = const_raw_data();
+    auto const nsize_1 = nsize - 1;
+    auto const last_needle = needle[nsize_1];
+
+    // Boyer-Moore skip value for the last char in the needle. Zero is
+    // not a valid value; skip will be computed the first time it's
+    // needed.
+    size_type skip = 0;
+
+    const E * i = haystack + pos;
+    auto i_end = haystack + size - nsize_1;
+
+    while (i < i_end) {
+        // Boyer-Moore: match the last element in the needle
+        while (i[nsize_1] != last_needle) {
+            if (++i == i_end) {
+                // not found
+                return npos;
+            }
+        }
+
+        // Here we know that the last char matches
+        // Continue in pedestrian mode
+        for (size_t j = 0; ; ) {
+            if (i[j] != needle[j]) {
+                // Not found, we can skip
+                // Compute the skip value lazily
+                if (skip == 0) {
+                    skip = 1;
+                    while (skip <= nsize_1 && needle[nsize_1 - skip] != last_needle) {
+                        ++skip;
+                    }
+                }
+                i += skip;
+                break;
+            }
+            // Check if done searching
+            if (++j == nsize) {
+                // Yay
+                return i - haystack;
+            }
+        }
+    }
+    return npos;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find(const value_type* s, size_type pos = 0) const -> size_type
+{
+    return find(s, pos, traits_type::length(s));
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find(value_type c, size_type pos = 0) const -> size_type
+{
+    return find(&c, pos, 1);
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::rfind(const FBStringBasic& str, size_type pos = npos) const -> size_type
+{
+    return rfind(str.const_raw_data(), pos, str.length());
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::rfind(const value_type* s, size_type pos, size_type n) const -> size_type
+{
+    if (n > length())
+        return npos;
+
+    pos = std::min(pos, length() - n);
+    if (n == 0)
+        return pos;
+
+    const_iterator i(cbegin() + pos);
+    for (; ; --i) {
+        if (traits_type::eq(*i, *s) && traits_type::compare(&*i, s, n) == 0)
+            return i - cbegin();
+
+        if (i == cbegin())
+            break;
+    }
+    return npos;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::rfind(const value_type* s, size_type pos = npos) const -> size_type
+{
+    return rfind(s, pos, traits_type::length(s));
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::rfind(value_type c, size_type pos = npos) const -> size_type
+{
+    return rfind(&c, pos, 1);
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_of(const FBStringBasic& str, size_type pos = 0) const -> size_type
+{
+    return find_first_of(str.const_raw_data(), pos, str.length());
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_of(const value_type* s,size_type pos, size_type n) const -> size_type
+{
+    if (pos > length() || n == 0)
+        return npos;
+
+    const_iterator i(cbegin() + pos);
+    const_iterator finish(cend());
+    for (; i != finish; ++i) {
+        if (traits_type::find(s, n, *i) != 0)
+            return i - cbegin();
+    }
+    return npos;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_of(const value_type* s, size_type pos = 0) const -> size_type
+{
+    return find_first_of(s, pos, traits_type::length(s));
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_of(value_type c, size_type pos = 0) const -> size_type
+{
+    return find_first_of(&c, pos, 1);
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_of (const FBStringBasic& str,size_type pos = npos) const -> size_type
+{
+    return find_last_of(str.const_raw_data(),pos,str.size());
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_of (const value_type* s, size_type pos,size_type n) const -> size_type
+{
+    if (!empty() && n > 0) {
+        pos = std::min(pos, length() - 1);
+
+        const_iterator i(cbegin() + pos);
+        for (;; --i) {
+            if (traits_type::find(s, n, *i) != 0)
+                return i - cbegin();
+
+            if (i == cbegin())
+                break;
+        }
+    }
+    return npos;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_of (const value_type* s,size_type pos = npos) const -> size_type
+{
+    return find_last_of(s, pos, traits_type::length(s));
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_of (value_type c, size_type pos = npos) const -> size_type
+{
+    return find_last_of(&c, pos, 1);
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_not_of(const FBStringBasic& str,size_type pos = 0) const -> size_type
+{
+    return find_first_not_of(str.const_raw_data(), pos, str.size());
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_not_of(const value_type* s, size_type pos,size_type n) const -> size_type
+{
+    if (pos < length()) {
+        const_iterator i(cbegin() + pos), finish(cend());
+        for (; i != finish; ++i) {
+            if (traits_type::find(s, n, *i) == 0)
+                return i - cbegin();
+        }
+    }
+    return npos;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_not_of(const value_type* s,size_type pos = 0) const -> size_type
+{
+    return find_first_not_of(s, pos, traits_type::length(s));
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_first_not_of(value_type c, size_type pos = 0) const -> size_type
+{
+    return find_first_not_of(&c, pos, 1);
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_not_of(const FBStringBasic& str,size_type pos = npos) const -> size_type
+{
+    return find_last_not_of(str.const_raw_data(), pos, str.length());
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_not_of(const value_type* s, size_type pos,size_type n) const -> size_type
+{
+    if (!this->empty()) {
+        pos = std::min(pos, size() - 1);
+
+        const_iterator i(cbegin() + pos);
+        for (;; --i) {
+            if (traits_type::find(s, n, *i) == 0)
+                return i - cbegin();
+            if (i == cbegin())
+                break;
+        }
+    }
+    return npos;
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_not_of(const value_type* s,size_type pos = npos) const -> size_type
+{
+    return find_last_not_of(s, pos, traits_type::length(s));
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::find_last_not_of (value_type c, size_type pos = npos) const -> size_type
+{
+    return find_last_not_of(&c, pos, 1);
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::substr(size_type pos = 0, size_type n = npos) const & -> FBStringBasic
+{
+    return FBStringBasic(const_raw_data() + pos, std::min(n, size() - pos));
+}
+
+template <typename E, class S, class T, class A>
+auto FBStringBasic<E,S,T,A>::substr(size_type pos = 0, size_type n = npos) && -> FBStringBasic
+{
+    erase(0, pos);
+    if (n < size())
+        resize(n);
+    return std::move(*this);
+}
+
+template <typename E, class S, class T, class A>
+int FBStringBasic<E,S,T,A>::compare(const FBStringBasic& str) const
+{
+    return compare(0, size(), str);
+}
+
+template <typename E, class S, class T, class A>
+int FBStringBasic<E,S,T,A>::compare(size_type pos1, size_type n1,const FBStringBasic& str) const
+{
+    return compare(pos1, n1, str.const_raw_data(), str.size());
+}
+
+
+template <typename E, class S, class T, class A>
+int FBStringBasic<E,S,T,A>::compare(size_type pos1, size_type n1,const value_type* s) const
+{
+    return compare(pos1, n1, s, traits_type::length(s));
+}
+
+template <typename E, class S, class T, class A>
+int FBStringBasic<E,S,T,A>::compare(size_type pos1, size_type n1,const value_type* s, size_type n2) const
+{
+    const auto left_size = size() - pos;
+    if (n1 > left_size)
+        n1 = left_size;
+
+    const int r = traits_type::compare(pos1 + const_raw_data(), s, std::min(n1, n2));
+    return r != 0 ? r : (n1 > n2 ? 1 : (n1 < n2 ? -1 : 0));
+}
+
+template <typename E, class S, class T, class A>
+int FBStringBasic<E,S,T,A>::compare(size_type pos1, size_type n1,const FBStringBasic& str,size_type pos2, size_type n2) const
+{
+    return compare(pos1, n1, str.const_raw_data() + pos2,std::min(n2, str.size() - pos2));
+}
+
+template <typename E, class S, class T, class A>
+int FBStringBasic<E,S,T,A>::compare(const value_type* s) const
+{
+    // 这里会有一次不必要的 if 判断!
+    return compare(0, size(), s, traits_type::length(s));
+}
 
 #undef FBSTRING_LIKELY
 #undef FBSTRING_UNLIKELY

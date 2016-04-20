@@ -4,3 +4,5 @@
 /home/pp-qq/project/org/pp-qq/common/gtest/include
 src/string/detail
 src/string
+test
+/home/pp-qq/lib/folly/include
