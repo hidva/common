@@ -58,5 +58,28 @@ if (fd < 0)
     THROW(errnom,"文件打开失败;fd: %d;path: %s",fd,path);
 ```
 
+### PP_QQ_CHECK
+
+*   考虑到`CHECK`宏名已经被用烂了,所以这里就只能强加个前缀了.
+
+```c++
+PP_QQ_CHECK(condition);
+PP_QQ_CHECK(condition,errnum);
+PP_QQ_CHECK(condition,errnum,format,...);
+```
+
+*   若`condition`为假,则构建并抛出一个`ErrnoException`异常;
+*   若`condition`为真,则**确保不会**对`errnum`,`format`,`...`进行求值!
+*   `PARAM:errnum`;用于指定构建的`ErrnoException`对象的错误码,默认为`EINVAL`.
+*   `PARAM:format,...`;用于指定构建的`ErrnoException`对象的错误描述,默认为空.
+
+### PP_QQ_DCHECK
+
+```c++
+#if defined(NDEBUG)
+#define PP_QQ_DCHECK // 定义为空
+#else
+#define PP_QQ_DCHECK PP_QQ_CHECK
+```
 
 
