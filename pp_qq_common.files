@@ -37,3 +37,4 @@ src/string/extended_std_string.h
 src/string/extended_std_string_test.cc
 src/string/string_piece.h
 src/string/string_piece.cc
+src/string/string_piece_test.cc

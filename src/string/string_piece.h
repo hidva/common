@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #include <string>
-#include <experimental/string_view>
 
 #include "exception/errno_exception.h"
 
@@ -44,7 +43,7 @@ public:
     inline ~StringPiece() noexcept = default;
 
     inline StringPiece& operator=(const StringPiece& lhs);
-    inline StringPiece& operator=(StringPiece&& goner) noexcept;
+    inline StringPiece& operator=(StringPiece&& goner) ;
     inline StringPiece& operator=(const value_type* s);
     inline StringPiece& operator=(value_type c);
     inline StringPiece& operator=(std::initializer_list<value_type> il);
@@ -65,28 +64,35 @@ public:
     inline const_reverse_iterator rend() const noexcept;
     inline const_reverse_iterator crend() const noexcept;
 
-    inline value_type& front();
-    inline const value_type& front() const;
-    inline const value_type& cfront() const;
+    inline value_type& front() noexcept;
+    inline const value_type& front() const noexcept;
+    inline const value_type& cfront() const noexcept;
 
-    inline value_type& back();
-    inline const value_type& back() const;
-    inline const value_type& cback() const;
+    inline value_type& back() noexcept;
+    inline const value_type& back() const noexcept;
+    inline const value_type& cback() const noexcept;
 
-    inline void pop_back();
+    inline void pop_back() noexcept;
     inline void push_back(const value_type c);
 
-    inline size_type size() const;
-    inline size_type length() const;
-    inline size_type max_size() const;
-    inline size_type capacity() const;
+    inline size_type size() const noexcept;
 
-    inline void resize(const size_type n, const value_type c = value_type());
+
+    inline size_type length() const noexcept;
+
+    inline size_type max_size() const noexcept;
+
+    inline size_type capacity() const noexcept;
+
+    void resize(const size_type n, const value_type c = value_type());
     inline void reserve(size_type res_arg = 0);
-    inline void shrink_to_fit();
-    inline void clear();
 
-    inline bool empty() const;
+
+    inline void shrink_to_fit() noexcept;
+    inline void clear() noexcept;
+
+
+    inline bool empty() const noexcept;
 
     inline reference operator[](size_type pos);
     inline const_reference operator[](size_type pos) const;
@@ -102,7 +108,7 @@ public:
 
     inline StringPiece& append(const StringPiece& str);
     inline StringPiece& append(const StringPiece& str, const size_type pos,size_type n);
-    inline StringPiece& append(const value_type* s, size_type n);
+    StringPiece& append(const value_type* s, size_type n);
     inline StringPiece& append(const value_type* s);
     inline StringPiece& append(size_type n, value_type c);
     inline StringPiece& append(std::initializer_list<value_type> il);
@@ -136,7 +142,7 @@ public:
     inline iterator insert(const_iterator pos, InputIt first, InputIt last);
 
     // erase();
-    inline StringPiece& erase(size_type pos = 0, size_type n = npos) noexcept;
+    StringPiece& erase(size_type pos = 0, size_type n = npos) noexcept;
     inline iterator erase(const_iterator position) noexcept;
     inline iterator erase(const_iterator first, const_iterator last) noexcept;
 
@@ -157,7 +163,7 @@ public:
 
     inline size_type copy(value_type* s, size_type n, size_type pos = 0) const noexcept;
 
-    inline void swap(StringPiece& rhs);
+    void swap(StringPiece& rhs);
 
     inline const value_type* c_str() const;
 
@@ -172,32 +178,32 @@ public:
     inline allocator_type get_allocator() const noexcept;
 
     inline size_type find(const StringPiece& str, size_type pos = 0) const noexcept;
-    inline size_type find(const value_type* needle, const size_type pos,const size_type nsize) const noexcept;
+    size_type find(const value_type* needle, const size_type pos,const size_type nsize) const noexcept;
     inline size_type find(const value_type* s, size_type pos = 0) const noexcept;
     inline size_type find (value_type c, size_type pos = 0) const noexcept;
 
     inline size_type rfind(const StringPiece& str, size_type pos = npos) const noexcept;
-    inline size_type rfind(const value_type* s, size_type pos, size_type n) const noexcept;
+    size_type rfind(const value_type* s, size_type pos, size_type n) const noexcept;
     inline size_type rfind(const value_type* s, size_type pos = npos) const noexcept;
     inline size_type rfind(value_type c, size_type pos = npos) const noexcept;
 
     inline size_type find_first_of(const StringPiece& str, size_type pos = 0) const noexcept;
-    inline size_type find_first_of(const value_type* s,size_type pos, size_type n) const noexcept;
+    size_type find_first_of(const value_type* s,size_type pos, size_type n) const noexcept;
     inline size_type find_first_of(const value_type* s, size_type pos = 0) const noexcept;
     inline size_type find_first_of(value_type c, size_type pos = 0) const noexcept;
 
     inline size_type find_last_of (const StringPiece& str,size_type pos = npos) const noexcept;
-    inline size_type find_last_of (const value_type* s, size_type pos,size_type n) const noexcept;
+    size_type find_last_of (const value_type* s, size_type pos,size_type n) const noexcept;
     inline size_type find_last_of (const value_type* s,size_type pos = npos) const noexcept;
     inline size_type find_last_of (value_type c, size_type pos = npos) const noexcept;
 
     inline size_type find_first_not_of(const StringPiece& str,size_type pos = 0) const noexcept;
-    inline size_type find_first_not_of(const value_type* s, size_type pos,size_type n) const noexcept;
+    size_type find_first_not_of(const value_type* s, size_type pos,size_type n) const noexcept;
     inline size_type find_first_not_of(const value_type* s,size_type pos = 0) const noexcept;
     inline size_type find_first_not_of(value_type c, size_type pos = 0) const noexcept;
 
     inline size_type find_last_not_of(const StringPiece& str,size_type pos = npos) const noexcept;
-    inline size_type find_last_not_of(const value_type* s, size_type pos,size_type n) const noexcept;
+    size_type find_last_not_of(const value_type* s, size_type pos,size_type n) const noexcept;
     inline size_type find_last_not_of(const value_type* s,size_type pos = npos) const noexcept;
     inline size_type find_last_not_of (value_type c, size_type pos = npos) const noexcept;
 
@@ -245,7 +251,7 @@ void StringPiece::AdjustTo(size_type &n,size_type max) noexcept
     return ;
 }
 
-StringPiece::StringPiece(StringPiece &&other):
+StringPiece::StringPiece(StringPiece &&other) noexcept:
     buf_(other.buf_),size_(other.size_),capacity_(other.capacity_)
 {
     other.buf_ = nullptr;
@@ -292,7 +298,7 @@ StringPiece& StringPiece::operator=(const StringPiece& lhs)
     return assign(lhs);
 }
 
-StringPiece& StringPiece::operator=(StringPiece&& goner) noexcept
+StringPiece& StringPiece::operator=(StringPiece&& goner)
 {
     return assign(std::move(goner));
 }
@@ -373,38 +379,38 @@ auto StringPiece::crend() const -> const_reverse_iterator
     return rend();
 }
 
-auto StringPiece::front() -> value_type&
+auto StringPiece::front() noexcept -> value_type&
 {
     return *begin();
 }
 
 
-auto StringPiece::front() const -> const value_type&
+auto StringPiece::front() const noexcept -> const value_type&
 {
     return *begin();
 }
 
-auto StringPiece::cfront() const -> const value_type&
+auto StringPiece::cfront() const noexcept -> const value_type&
 {
     return front();
 }
 
-auto StringPiece::back() -> value_type&
+auto StringPiece::back() noexcept -> value_type&
 {
     return *(end() - 1);
 }
 
-auto StringPiece::back() const -> const value_type&
+auto StringPiece::back() const noexcept -> const value_type&
 {
     return *(end() - 1);
 }
 
-auto StringPiece::cback() const -> const value_type&
+auto StringPiece::cback() const noexcept -> const value_type&
 {
     return back();
 }
 
-void StringPiece::pop_back()
+void StringPiece::pop_back() noexcept
 {
     --size_;
     return ;
@@ -420,34 +426,24 @@ void StringPiece::push_back(const value_type c)
 }
 
 
-auto StringPiece::size() const -> size_type
+auto StringPiece::size() const noexcept -> size_type
 {
     return size_;
 }
 
-auto StringPiece::length() const -> size_type
+auto StringPiece::length() const noexcept -> size_type
 {
     return size();
 }
 
-auto StringPiece::max_size() const -> size_type
+auto StringPiece::max_size() const noexcept -> size_type
 {
     return UINT_FAST32_MAX;
 }
 
-auto StringPiece::capacity() const -> size_type
+auto StringPiece::capacity() const noexcept -> size_type
 {
     return capacity_;
-}
-
-void StringPiece::resize(const size_type n, const value_type c)
-{
-    PP_QQ_CHECK(n <= capacity_,ENOSPC,"n: %zu;capacity: %zu",n,capacity_);
-
-    if (n > size_)
-        memset(buf_ + size_,c,n - size_);
-    size_ = n;
-    return ;
 }
 
 void StringPiece::reserve(size_type res_arg)
@@ -456,18 +452,18 @@ void StringPiece::reserve(size_type res_arg)
     return ;
 }
 
-void StringPiece::shrink_to_fit()
+void StringPiece::shrink_to_fit() noexcept
 {
     return ;
 }
 
-void StringPiece::clear()
+void StringPiece::clear() noexcept
 {
     size_ = 0;
     return ;
 }
 
-bool StringPiece::empty() const
+bool StringPiece::empty() const noexcept
 {
     return size_ == 0;
 }
@@ -528,15 +524,6 @@ StringPiece& StringPiece::append(const StringPiece& str, const size_type pos,siz
     return append(str.const_raw_data() + pos,n);
 }
 
-StringPiece& StringPiece::append(const value_type* s, size_type n)
-{
-    size_type new_size = size_ + n;
-    PP_QQ_CHECK(new_size <= capacity_,EINVAL,"new_size: %zu;capacity_: %zu",new_size,capacity_);
-
-    memcpy(buf_ + size_,s,n);
-    size_ = new_size;
-    return *this;
-}
 
 StringPiece& StringPiece::append(const value_type* s)
 {
@@ -658,13 +645,6 @@ auto StringPiece::erase(const_iterator position) noexcept -> iterator
     return begin() + pos;
 }
 
-
-/* TODO(wangwei)
- * 1. 检查所有接口声明,确保与 std::string 一致;再根据实现适当增加 inline,noexcept 标记.
- * 2. 检查所有可能会抛出异常的实现,确保不会因为异常而破坏对象的状态.
- * 3. findX() 系列函数内部使用 string_view,这个得 C++14 才能编译使用.想办法减少这种依赖.!
- */
-
 auto StringPiece::erase(const_iterator first, const_iterator last) noexcept -> iterator
 {
     const size_type pos {first - cbegin()};
@@ -729,15 +709,7 @@ auto StringPiece::copy(value_type* s, size_type n, size_type pos = 0) noexcept -
     return n;
 }
 
-void StringPiece::swap(StringPiece& rhs)
-{
-    PP_QQ_CHECK(rhs.size_ <= capacity_ && size_ <= rhs.capacity_,EINVAL,"size: %zu;capacity: %zu;rhs.size: %zu;rhs.capacity: %zu",size_,capacity_,rhs.size_,rhs.capacity_);
 
-    std::string saver(const_raw_data(),size());
-    assign(rhs.const_raw_data(),rhs.size());
-    rhs.assign(saver.data(),saver.size());
-    return ;
-}
 
 bool StringPiece::IsNullTerminated() const noexcept
 {
@@ -799,13 +771,6 @@ auto StringPiece::find(const StringPiece& str, size_type pos) const noexcept -> 
     return find(str.const_raw_data(), pos, str.length());
 }
 
-auto StringPiece::find(const value_type* needle, const size_type pos,const size_type nsize) const noexcept -> size_type
-{
-    std::experimental::string_view needle_string_view(needle,nsize);
-    std::experimental::string_view hack_string_view(const_raw_data(),size());
-    const auto find_rc = hack_string_view.find(needle_string_view,pos);
-    return find_rc == hack_string_view.npos ? npos : find_rc;
-}
 
 auto StringPiece::find(const value_type* s, size_type pos) const noexcept -> size_type
 {
@@ -822,13 +787,6 @@ auto StringPiece::rfind(const StringPiece& str, size_type pos = npos) const noex
     return rfind(str.const_raw_data(),pos,str.size());
 }
 
-auto StringPiece::rfind(const value_type* s, size_type pos, size_type n) const noexcept -> size_type
-{
-    std::experimental::string_view needle_string_view(s,n);
-    std::experimental::string_view hack_string_view(const_raw_data(),size());
-    const auto find_rc = hack_string_view.rfind(needle_string_view,pos);
-    return find_rc == hack_string_view.npos ? npos : find_rc;
-}
 
 auto StringPiece::rfind(const value_type* s, size_type pos = npos) const noexcept -> size_type
 {
@@ -841,18 +799,9 @@ auto StringPiece::rfind(value_type c, size_type pos = npos) const noexcept -> si
 }
 
 
-
-
 auto StringPiece::find_first_of(const StringPiece& str, size_type pos) const noexcept -> size_type
 {
     return find_first_of(str.const_raw_data(),pos,str.size());
-}
-
-auto StringPiece::find_first_of(const value_type* s,size_type pos, size_type n) const noexcept -> size_type
-{
-    std::experimental::string_view hack_string_view(const_raw_data(),size());
-    const auto rc = hack_string_view.find_first_of(s,pos,n);
-    return rc == hack_string_view.npos ? npos : rc;
 }
 
 
@@ -871,13 +820,6 @@ auto StringPiece::find_last_of (const StringPiece& str,size_type pos) const noex
     return find_last_of(str.const_raw_data(),pos,str.size());
 }
 
-auto StringPiece::find_last_of (const value_type* s, size_type pos,size_type n) const noexcept -> size_type
-{
-    std::experimental::string_view hack_string_view(const_raw_data(),size());
-    const auto rc = hack_string_view.find_last_of(s,pos,n);
-    return rc == hack_string_view.npos ? npos : rc;
-}
-
 auto StringPiece::find_last_of (const value_type* s,size_type pos) const noexcept -> size_type
 {
     return find_last_of(s,pos,strlen(s));
@@ -893,13 +835,6 @@ auto StringPiece::find_first_not_of(const StringPiece& str,size_type pos) const 
     return find_first_not_of(str.const_raw_data(),pos,str.size());
 }
 
-auto StringPiece::find_first_not_of(const value_type* s, size_type pos,size_type n) const noexcept -> size_type
-{
-    std::experimental::string_view hack_string_view(const_raw_data(),size());
-    const auto rc = hack_string_view.find_first_not_of(s,pos,n);
-    return rc == hack_string_view.npos ? npos : rc;
-}
-
 auto StringPiece::find_first_not_of(const value_type* s,size_type pos) const noexcept -> size_type
 {
     return find_first_not_of(s,pos,strlen(s));
@@ -913,13 +848,6 @@ auto StringPiece::find_first_not_of(value_type c, size_type pos) const noexcept 
 auto StringPiece::find_last_not_of(const StringPiece& str,size_type pos) const noexcept -> size_type
 {
     return find_last_not_of(str.const_raw_data(),pos,str.size());
-}
-
-auto StringPiece::find_last_not_of(const value_type* s, size_type pos,size_type n) const noexcept -> size_type
-{
-    std::experimental::string_view hack_string_view(const_raw_data(),size());
-    const auto rc = hack_string_view.find_last_not_of(s,pos,n);
-    return rc == hack_string_view.npos ? npos : rc;
 }
 
 auto StringPiece::find_last_not_of(const value_type* s,size_type pos) const noexcept -> size_type
@@ -967,6 +895,138 @@ int StringPiece::compare(const value_type* s) const noexcept
 }
 
 
+inline bool
+operator==(const StringPiece& lhs,const StringPiece& rhs) noexcept
+{
+    return lhs.size() == rhs.size() && lhs.compare(rhs) == 0;
+}
+
+
+inline bool
+operator==(const StringPiece::value_type* lhs,const StringPiece& rhs) noexcept
+{
+    return rhs == lhs;
+}
+
+
+inline bool
+operator==(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
+
+
+inline bool
+operator!=(const StringPiece& lhs,const StringPiece& rhs) noexcept
+{
+    return !(lhs == rhs);
+}
+
+
+inline bool
+operator!=(const StringPiece::value_type* lhs,const StringPiece& rhs) noexcept
+{
+    return !(lhs == rhs);
+}
+
+
+inline bool
+operator!=(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
+{
+    return !(lhs == rhs);
+}
+
+
+inline bool
+operator<(const StringPiece& lhs,const StringPiece& rhs) noexcept
+{
+    return lhs.compare(rhs) < 0;
+}
+
+
+inline bool
+operator<(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
+{
+    return lhs.compare(rhs) < 0;
+}
+
+
+inline bool
+operator<(const StringPiece::value_type* lhs,const StringPiece& rhs) noexcept
+{
+    return rhs.compare(lhs) > 0;
+}
+
+
+inline bool
+operator>(const StringPiece& lhs,const StringPiece& rhs) noexcept
+{
+    return rhs < lhs;
+}
+
+
+inline bool
+operator>(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
+{
+    return rhs < lhs;
+}
+
+
+inline bool
+operator>(const StringPiece::value_type* lhs,const StringPiece& rhs) noexcept
+{
+    return rhs < lhs;
+}
+
+
+inline bool
+operator<=(const StringPiece& lhs,const StringPiece& rhs) noexcept
+{
+    return !(rhs < lhs);
+}
+
+
+inline bool
+operator<=(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
+{
+    return !(rhs < lhs);
+}
+
+
+inline bool
+operator<=(const StringPiece::value_type* lhs,const StringPiece& rhs) noexcept
+{
+    return !(rhs < lhs);
+}
+
+
+inline bool
+operator>=(const StringPiece& lhs,const StringPiece& rhs) noexcept
+{
+    return !(lhs < rhs);
+}
+
+
+inline bool
+operator>=(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
+{
+    return !(lhs < rhs);
+}
+
+
+inline bool
+operator>=(const StringPiece::value_type* lhs,const StringPiece& rhs) noexcept
+{
+    return !(lhs < rhs);
+}
+
+
+inline void
+swap(StringPiece& lhs, StringPiece& rhs)
+{
+    lhs.swap(rhs);
+    return ;
+}
 
 
 

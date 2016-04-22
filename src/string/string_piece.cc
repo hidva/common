@@ -36,7 +36,7 @@ StringPiece& StringPiece::insert(size_type pos, const value_type* s, size_type n
 }
 
 
-StringPiece& StringPiece::erase(size_type pos = 0, size_type n) noexcept
+StringPiece& StringPiece::erase(size_type pos, size_type n) noexcept
 {
     const auto left_size = size() - pos;
     if (n >= left_size) {
@@ -90,3 +90,110 @@ StringPiece& StringPiece::replace(const_iterator i1, const_iterator i2,const val
 }
 
 
+StringPiece& StringPiece::append(const value_type* s, size_type n)
+{
+    size_type new_size = size_ + n;
+    PP_QQ_CHECK(new_size <= capacity_,EINVAL,"new_size: %zu;capacity_: %zu",new_size,capacity_);
+
+    memcpy(buf_ + size_,s,n);
+    size_ = new_size;
+    return *this;
+}
+
+auto StringPiece::find(const value_type* needle, const size_type pos,const size_type nsize) const noexcept -> size_type
+{
+    if (pos > size_ || pos < 0)
+        return npos;
+
+    if (nsize == 0)
+        return pos;
+
+    const value_type *haystack = buf_ + pos;
+    const auto haylen = size_ - pos;
+    const auto * const rc = memmem(haystack,haylen,needle,nsize);
+    return rc == nullptr ? npos : static_cast<const value_type*>(rc) - buf_;
+}
+
+auto StringPiece::rfind(const value_type* s, size_type pos, size_type n) const noexcept -> size_type
+{
+    if (n <= size_) {
+        pos = std::min(size_ - n,pos);
+        do {
+            if (memcmp(buf_ + pos,s,n) == 0)
+                return pos;
+        } while (pos-- > 0);
+    }
+    return npos;
+}
+
+auto StringPiece::find_first_of(const value_type* s,size_type pos, size_type n) const noexcept -> size_type
+{
+    if (n == 0)
+        return npos;
+
+    for (; pos < size_; ++pos) {
+        if (traits_type::find(s,n,buf_[pos]) != nullptr)
+            return pos;
+    }
+    return npos;
+}
+
+auto StringPiece::find_last_of (const value_type* s, size_type pos,size_type n) const noexcept -> size_type
+{
+    size_type current_index = this->size();
+    if (current_index && n) {
+        if (--current_index > pos)
+            current_index = pos;
+
+        do {
+            if (traits_type::find(s,n,buf_[current_index]))
+                return current_index;
+        } while (current_index-- != 0);
+    }
+    return npos;
+}
+
+auto StringPiece::find_first_not_of(const value_type* s, size_type pos,size_type n) const noexcept -> size_type
+{
+    for (; pos < size_; ++pos) {
+        if (!traits_type::find(s,n,buf_[pos]))
+            return pos;
+    }
+    return npos;
+}
+
+auto StringPiece::find_last_not_of(const value_type* s, size_type pos,size_type n) const noexcept -> size_type
+{
+    size_type idx = size_;
+    if (idx) {
+        if (--idx > pos)
+            idx = pos;
+
+        do {
+            if (!traits_type::find(s,n,buf_[idx]))
+                return idx;
+        } while(idx--);
+    }
+    return npos;
+}
+
+
+void StringPiece::resize(const size_type n, const value_type c)
+{
+    PP_QQ_CHECK(n <= capacity_,ENOSPC,"n: %zu;capacity: %zu",n,capacity_);
+
+    if (n > size_)
+        memset(buf_ + size_,c,n - size_);
+    size_ = n;
+    return ;
+}
+
+void StringPiece::swap(StringPiece& rhs)
+{
+    PP_QQ_CHECK(rhs.size_ <= capacity_ && size_ <= rhs.capacity_,EINVAL,"size: %zu;capacity: %zu;rhs.size: %zu;rhs.capacity: %zu",size_,capacity_,rhs.size_,rhs.capacity_);
+
+    std::string saver(const_raw_data(),size());
+    assign(rhs.const_raw_data(),rhs.size());
+    rhs.assign(saver.data(),saver.size());
+    return ;
+}
