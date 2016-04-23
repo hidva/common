@@ -2,6 +2,7 @@
 #define ORG_PP_QQ_COMMON_STRING_STRING_PIECE_H
 
 #include <stdint.h>
+#include <string.h>
 
 #include <string>
 
@@ -46,7 +47,9 @@ public:
     inline StringPiece& operator=(StringPiece&& goner) ;
     inline StringPiece& operator=(const value_type* s);
     inline StringPiece& operator=(value_type c);
+#if 0
     inline StringPiece& operator=(std::initializer_list<value_type> il);
+#endif
 
     inline iterator begin() noexcept;
     inline const_iterator begin()  const noexcept;
@@ -104,17 +107,21 @@ public:
     inline StringPiece& operator+=(const StringPiece& str);
     inline StringPiece& operator+=(const value_type* s);
     inline StringPiece& operator+=(const value_type c);
+#if 0
     inline StringPiece& operator+=(std::initializer_list<value_type> il);
+#endif
 
     inline StringPiece& append(const StringPiece& str);
     inline StringPiece& append(const StringPiece& str, const size_type pos,size_type n);
     StringPiece& append(const value_type* s, size_type n);
     inline StringPiece& append(const value_type* s);
     inline StringPiece& append(size_type n, value_type c);
+#if 0
     inline StringPiece& append(std::initializer_list<value_type> il);
 
     template <typename Iter>
     inline StringPiece& append(Iter b,Iter e);
+#endif
 
     // assign();
     inline StringPiece& assign(const StringPiece& str);
@@ -122,24 +129,29 @@ public:
     inline StringPiece& assign(const StringPiece& str, const size_type pos,size_type n);
     inline StringPiece& assign(const value_type* s, const size_type n);
     inline StringPiece& assign(const value_type* s);
-    inline StringPiece& assign(std::initializer_list<value_type> il);
     inline StringPiece& assign(size_type n, value_type c);
+
+#if 0
+    inline StringPiece& assign(std::initializer_list<value_type> il);
 
     template< class InputIt >
     inline StringPiece& assign( InputIt first, InputIt last );
+#endif
 
     // insert();
     inline StringPiece& insert(size_type pos1, const StringPiece& str);
     inline StringPiece& insert(size_type pos1, const StringPiece& str,size_type pos2, size_type n);
     StringPiece& insert(size_type pos, const value_type* s, size_type n);
     inline StringPiece& insert(size_type pos, const value_type* s);
-    inline StringPiece& insert(size_type pos, size_type n, value_type c);
+    StringPiece& insert(size_type pos, size_type n, value_type c);
     inline iterator insert(const_iterator p, const value_type c);
-    iterator insert(const_iterator p, size_type n, value_type c);
+    inline iterator insert(const_iterator p, size_type n, value_type c);
+#if 0
     inline iterator insert(const_iterator p, std::initializer_list<value_type> il);
 
     template<class InputIt>
     inline iterator insert(const_iterator pos, InputIt first, InputIt last);
+#endif
 
     // erase();
     StringPiece& erase(size_type pos = 0, size_type n = npos) noexcept;
@@ -156,10 +168,13 @@ public:
     inline StringPiece& replace(const_iterator i1, const_iterator i2, const value_type* s);
     StringPiece& replace(const_iterator i1, const_iterator i2,size_type n, value_type c);
     StringPiece& replace(const_iterator i1, const_iterator i2,const value_type* s, size_type n);
-    inline StringPiece& replace( const_iterator first, const_iterator last,std::initializer_list<CharT> ilist);
+
+#if 0
+    inline StringPiece& replace( const_iterator first, const_iterator last,std::initializer_list<char> ilist);
 
     template< class InputIt >
     inline StringPiece& replace( const_iterator first, const_iterator last,InputIt first2, InputIt last2 );
+#endif
 
     inline size_type copy(value_type* s, size_type n, size_type pos = 0) const noexcept;
 
@@ -235,9 +250,9 @@ private:
     inline void SetNullTerminated() const;
 
 private:
-    char * const buf_ = nullptr;
+    char * buf_ = nullptr;
     size_type size_ = 0;
-    size_type const capacity_ = 0;
+    size_type capacity_ = 0;
 
 private:
     StringPiece() = delete;
@@ -260,7 +275,7 @@ StringPiece::StringPiece(StringPiece &&other) noexcept:
 }
 
 StringPiece::StringPiece(void *ptr,size_t size) noexcept:
-    buf_(ptr),size_(0),capacity_(size)
+    buf_(static_cast<char*>(ptr)),size_(0),capacity_(size)
 {
 }
 
@@ -313,68 +328,70 @@ StringPiece& StringPiece::operator=(value_type c)
     return assign(1,c);
 }
 
+#if 0
 StringPiece& StringPiece::operator=(std::initializer_list<value_type> il)
 {
     return assign(il);
 }
+#endif
 
-auto StringPiece::begin() -> iterator
+auto StringPiece::begin() noexcept -> iterator
 {
     return buf_;
 }
 
-auto StringPiece::begin() const -> const_iterator
+auto StringPiece::begin() const noexcept -> const_iterator
 {
     return buf_;
 }
 
-auto StringPiece::cbegin() const -> const_iterator
+auto StringPiece::cbegin() const noexcept -> const_iterator
 {
     return begin();
 }
 
-auto StringPiece::end() -> iterator
+auto StringPiece::end() noexcept -> iterator
 {
     return buf_ + size_;
 }
 
-auto StringPiece::end() const -> const_iterator
+auto StringPiece::end() const noexcept -> const_iterator
 {
     return buf_ + size_;
 }
 
-auto StringPiece::cend() const -> const_iterator
+auto StringPiece::cend() const noexcept -> const_iterator
 {
     return end();
 }
 
 
-auto StringPiece::rbegin() -> reverse_iterator
+auto StringPiece::rbegin() noexcept -> reverse_iterator
 {
     return reverse_iterator(end());
 }
 
-auto StringPiece::rbegin() const -> const_reverse_iterator
+auto StringPiece::rbegin() const noexcept -> const_reverse_iterator
 {
     return const_reverse_iterator(end());
 }
 
-auto StringPiece::crbegin() const -> const_reverse_iterator
+auto StringPiece::crbegin() const noexcept -> const_reverse_iterator
 {
     return rbegin();
 }
 
-auto StringPiece::rend() -> reverse_iterator
+auto StringPiece::rend() noexcept -> reverse_iterator
 {
     return reverse_iterator(begin());
 }
 
-auto StringPiece::rend() const -> const_reverse_iterator
+auto StringPiece::rend() const noexcept -> const_reverse_iterator
 {
     return const_reverse_iterator(begin());
 }
 
-auto StringPiece::crend() const -> const_reverse_iterator
+auto StringPiece::crend() const noexcept -> const_reverse_iterator
 {
     return rend();
 }
@@ -508,10 +525,12 @@ StringPiece& StringPiece::operator+=(const value_type c)
     return append(1,c);
 }
 
+#if 0
 StringPiece& StringPiece::operator+=(std::initializer_list<value_type> il)
 {
     return append(il);
 }
+#endif
 
 StringPiece& StringPiece::append(const StringPiece& str)
 {
@@ -536,6 +555,7 @@ StringPiece& StringPiece::append(size_type n, value_type c)
     return *this;
 }
 
+#if 0
 StringPiece& StringPiece::append(std::initializer_list<value_type> il)
 {
     return append(il.begin(),il.end());
@@ -547,6 +567,7 @@ StringPiece& StringPiece::append(Iter b,Iter e)
     static_assert(0,"由于现在对 STL 中整个迭代器模块不是很熟悉,所以还是不要贸然实现这个了吧.");
     return *this;
 }
+#endif
 
 StringPiece& StringPiece::assign(const StringPiece& str)
 {
@@ -566,6 +587,7 @@ StringPiece& StringPiece::assign(const StringPiece& str, const size_type pos,siz
 
 StringPiece& StringPiece::assign(const value_type* s, const size_type n)
 {
+    PP_QQ_CHECK(n <= capacity_,EINVAL,"n: %zu;capacity_: %zu",n,capacity_);
     memmove(buf_,s,n);
     size_ = n;
     return *this;
@@ -576,11 +598,6 @@ StringPiece& StringPiece::assign(const value_type* s)
     return assign(s,strlen(s));
 }
 
-StringPiece& StringPiece::assign(std::initializer_list<value_type> il)
-{
-    return assign(il.begin(),il.end());
-}
-
 StringPiece& StringPiece::assign(size_type n, value_type c)
 {
     PP_QQ_CHECK(n <= capacity_,EINVAL,"n: %zu;capacity_: %zu",n,capacity_);
@@ -589,12 +606,19 @@ StringPiece& StringPiece::assign(size_type n, value_type c)
     return *this;
 }
 
+#if 0
+StringPiece& StringPiece::assign(std::initializer_list<value_type> il)
+{
+    return assign(il.begin(),il.end());
+}
+
 template< class InputIt >
 StringPiece& StringPiece::assign(InputIt , InputIt )
 {
     static_assert(0,"由于现在对 STL 中整个迭代器模块不是很熟悉,所以还是不要贸然实现这个了吧.");
     return *this;
 }
+#endif
 
 StringPiece& StringPiece::insert(size_type pos1, const StringPiece& str)
 {
@@ -626,28 +650,31 @@ auto StringPiece::insert(const_iterator p, size_type n, value_type c) -> iterato
     return begin() + pos;
 }
 
+#if 0
+
 auto StringPiece::insert(const_iterator p, std::initializer_list<value_type> il) -> iterator
 {
     return insert(p,il.begin(),il.end());
 }
 
 template<class InputIt>
-auto StringPiece::insert(const_iterator , InputIt , InputIt ) -> iterator
+auto StringPiece::insert(const_iterator b, InputIt , InputIt ) -> iterator
 {
     static_assert(0,"由于现在对 STL 中整个迭代器模块不是很熟悉,所以还是不要贸然实现这个了吧.");
-    return *this;
+    return b;
 }
+#endif
 
 auto StringPiece::erase(const_iterator position) noexcept -> iterator
 {
-    const size_type pos {position - cbegin()};
+    const size_type pos = position - cbegin();
     erase(pos, 1);
     return begin() + pos;
 }
 
 auto StringPiece::erase(const_iterator first, const_iterator last) noexcept -> iterator
 {
-    const size_type pos {first - cbegin()};
+    const size_type pos = first - cbegin();
     erase(pos, last - first);
     return begin() + pos;
 }
@@ -690,7 +717,8 @@ StringPiece& StringPiece::replace(const_iterator i1, const_iterator i2, const va
     return replace(i1,i2,s,strlen(s));
 }
 
-StringPiece& StringPiece::replace( const_iterator first, const_iterator last,std::initializer_list<CharT> ilist)
+#if 0
+StringPiece& StringPiece::replace( const_iterator first, const_iterator last,std::initializer_list<char> ilist)
 {
     return replace(first,last,ilist.begin(),ilist.end());
 }
@@ -701,8 +729,9 @@ StringPiece& StringPiece::replace(const_iterator /* first */, const_iterator /* 
     static_assert(0,"由于现在对 STL 中整个迭代器模块不是很熟悉,所以还是不要贸然实现这个了吧.");
     return *this;
 }
+#endif
 
-auto StringPiece::copy(value_type* s, size_type n, size_type pos = 0) noexcept -> size_type
+auto StringPiece::copy(value_type* s, size_type n, size_type pos) const noexcept -> size_type
 {
     AdjustTo(n,size() - pos);
     memcpy(s,const_raw_data() + pos,n);
@@ -782,18 +811,18 @@ auto StringPiece::find (value_type c, size_type pos) const noexcept -> size_type
     return find(&c, pos, 1);
 }
 
-auto StringPiece::rfind(const StringPiece& str, size_type pos = npos) const noexcept -> size_type
+auto StringPiece::rfind(const StringPiece& str, size_type pos) const noexcept -> size_type
 {
     return rfind(str.const_raw_data(),pos,str.size());
 }
 
 
-auto StringPiece::rfind(const value_type* s, size_type pos = npos) const noexcept -> size_type
+auto StringPiece::rfind(const value_type* s, size_type pos ) const noexcept -> size_type
 {
     return rfind(s,pos,strlen(s));
 }
 
-auto StringPiece::rfind(value_type c, size_type pos = npos) const noexcept -> size_type
+auto StringPiece::rfind(value_type c, size_type pos) const noexcept -> size_type
 {
     return rfind(&c,pos,1);
 }
@@ -903,17 +932,17 @@ operator==(const StringPiece& lhs,const StringPiece& rhs) noexcept
 
 
 inline bool
+operator==(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
+{
+    return lhs.compare(rhs) == 0;
+}
+
+inline bool
 operator==(const StringPiece::value_type* lhs,const StringPiece& rhs) noexcept
 {
     return rhs == lhs;
 }
 
-
-inline bool
-operator==(const StringPiece& lhs,const StringPiece::value_type* rhs) noexcept
-{
-    return lhs.compare(rhs) == 0;
-}
 
 
 inline bool

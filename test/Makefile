@@ -27,7 +27,9 @@ CXX_SRC += $(PROJECT_PATH)/src/formatter/stdio_formatter_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/gtest/src/gtest-all.cc
 
-CXX_SRC += $(PROJECT_PATH)/src/string/extended_std_string_test.cc
+CXX_SRC += $(PROJECT_PATH)/src/string/extended_std_string_test.cc	\
+	   $(PROJECT_PATH)/src/string/string_piece.cc	\
+	   $(PROJECT_PATH)/src/string/string_piece_test.cc
 
 C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
 

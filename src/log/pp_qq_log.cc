@@ -17,10 +17,10 @@ inline char LogLevel2Char(int level)
 
 }
 
-void stdoutHandler(int level,const char *tag,const char *file,int line,const char *func,const char *prettyFunc,const char *format,...) noexcept
+void stdoutHandler(int level,const char *tag,const char */* file */,int /* line */,const char */* func */,const char */* prettyFunc */,const char *format,...) noexcept
 {
     std::string log_msg;
-    AppendStdioFormat(log_msg,"%c/%s;pid: %d;thread: %#lx;file: %s;line: %d;func: %s;",LogLevel2Char(level),tag,getpid(),pthread_self(),file,line,func);
+    AppendStdioFormat(log_msg,"%c/%s;pid: %d;thread: %#lx;",LogLevel2Char(level),tag,getpid(),pthread_self());
 
     va_list ap;
     va_start(ap,format);

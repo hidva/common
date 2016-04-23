@@ -57,11 +57,12 @@ StringPiece& StringPiece::replace(const_iterator i1, const_iterator i2,size_type
     const auto new_size = size() - n1 + n2;
     PP_QQ_CHECK(new_size <= capacity_,EINVAL,"new_size: %zu;capacity_: %zu",new_size,capacity_);
 
+    char *replace_pointer = raw_data() + (i1 - cbegin());
     if (n1 > n2) {
-        memset(i1,c,n2);
+        memset(replace_pointer,c,n2);
         erase(i1 + n2, i2);
     } else {
-        memset(i1,c,n1);
+        memset(replace_pointer,c,n1);
         insert(i2, n2 - n1, c);
     }
     return *this;
@@ -69,24 +70,25 @@ StringPiece& StringPiece::replace(const_iterator i1, const_iterator i2,size_type
 
 StringPiece& StringPiece::replace(const_iterator i1, const_iterator i2,const value_type* s, size_type n2)
 {
-    auto const n1 = i2 - i1;
+    size_type const n1 = i2 - i1;
     const auto new_size = size() - n1 + n2;
     PP_QQ_CHECK(new_size <= capacity_,EINVAL,"new_size: %zu;capacity_: %zu",new_size,capacity_);
 
     if (s >= buf_ && s < buf_ + size_) {
         // 此时 [s,s + n) 与当前字符串对象重叠.
-        std::string saver(s,n);
+        std::string saver(s,n2);
         return replace(i1,i2,saver.data(),saver.size());
     }
 
+    char *replace_pointer = raw_data() + (i1 - cbegin());
     if (n1 > n2) {
-        memcpy(const_cast<char*>(i1),s,n2);
+        memcpy(replace_pointer,s,n2);
         erase(i1 + n2, i2);
     } else {
-        memcpy(const_cast<char*>(i1),s,n1);
-        insert(i2, s + n1, n2 - n1);
+        memcpy(replace_pointer,s,n1);
+        insert(i2 - cbegin(), s + n1, n2 - n1);
     }
-    return ;
+    return *this;
 }
 
 
