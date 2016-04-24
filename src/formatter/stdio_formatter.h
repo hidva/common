@@ -32,7 +32,7 @@ StringType& VAppendStdioFormat(StringType &str,const char *f,va_list ap)
             str.append(buf,ret);
         } else { // 表明 buf 空间不足.
             const size_t kOldSize = str.size();
-            str.resize(kOldSize + ret + 1);
+            str.resize(kOldSize + ret);
             ON_EXCEPTIN {
                 str.resize(kOldSize);
             };
