@@ -1,6 +1,7 @@
 #include "hex_coding.h"
 #include "gtest/gtest.h"
 #include "exception/errno_exception.h"
+#include "string/extended_std_string.h"
 
 #include <string>
 #include <string.h>
@@ -15,7 +16,7 @@ TEST(HexEncodeTest,test1)
         buf[size] = '\0';
         EXPECT_STREQ("01",buf);
 
-        std::string str_buf;
+        ExtendedStdString str_buf;
         HexEncode(str_buf,data,sizeof(data));
         EXPECT_EQ(std::string{"01"},str_buf);
 
@@ -23,7 +24,7 @@ TEST(HexEncodeTest,test1)
         HexEncode(str_buf,data,sizeof(data));
         EXPECT_EQ(std::string{"Hello01"},str_buf);
 
-        EXPECT_EQ(std::string{"01"},HexEncode<std::string>(data,sizeof(data)));
+        EXPECT_EQ(std::string{"01"},HexEncode<ExtendedStdString>(data,sizeof(data)));
     }
 
     {
@@ -34,7 +35,7 @@ TEST(HexEncodeTest,test1)
         buf[size] = '\0';
         EXPECT_STREQ("0102030405060708090A0B0C0D0E0F",buf);
 
-        std::string str_buf;
+        ExtendedStdString str_buf;
         HexEncode(str_buf,data,sizeof(data));
         EXPECT_EQ(std::string{"0102030405060708090A0B0C0D0E0F"},str_buf);
 
@@ -42,7 +43,7 @@ TEST(HexEncodeTest,test1)
         HexEncode(str_buf,data,sizeof(data));
         EXPECT_EQ(std::string{"Hello0102030405060708090A0B0C0D0E0F"},str_buf);
 
-        EXPECT_EQ(std::string{"0102030405060708090A0B0C0D0E0F"},HexEncode<std::string>(data,sizeof(data)));
+        EXPECT_EQ(std::string{"0102030405060708090A0B0C0D0E0F"},HexEncode<ExtendedStdString>(data,sizeof(data)));
     }
 }
 
@@ -59,17 +60,17 @@ TEST(HexDecodeTest,test1)
     ASSERT_EQ(sizeof(expected_val),data_size);
     EXPECT_EQ(0,memcmp(expected_val,data,sizeof(expected_val)));
 
-    std::string str;
+    ExtendedStdString str;
     HexDecode(str,hex_str,hex_str_size);
     EXPECT_EQ(std::string(reinterpret_cast<const char*>(expected_val),sizeof(expected_val)),str);
 
     str = "HelloWorld";
     HexDecode(str,hex_str,hex_str_size);
-    std::string expected_val_2 {"HelloWorld"};
+    ExtendedStdString expected_val_2 {"HelloWorld"};
     expected_val_2.append(reinterpret_cast<const char*>(expected_val),sizeof(expected_val));
     EXPECT_EQ(expected_val_2,str);
 
-    EXPECT_EQ(std::string(reinterpret_cast<const char*>(expected_val),sizeof(expected_val)),HexDecode<std::string>(hex_str,hex_str_size));
+    EXPECT_EQ(std::string(reinterpret_cast<const char*>(expected_val),sizeof(expected_val)),HexDecode<ExtendedStdString>(hex_str,hex_str_size));
 }
 
 

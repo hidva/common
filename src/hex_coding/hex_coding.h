@@ -17,7 +17,7 @@ StringType& HexEncode(StringType &str,const void *data,size_t size)
     str.resize(old_size + need_size);
     ON_EXCEPTIN { str.resize(old_size);};
 
-    HexEncode(const_cast<char*>(str.data() + old_size),need_size,data,size);
+    HexEncode(const_cast<char*>(str.raw_data() + old_size),need_size,data,size);
     return str;
 }
 
@@ -31,7 +31,7 @@ StringType& HexDecode(StringType &str,const char *buf,size_t size)
         str.resize(old_size);
     };
 
-    HexDecode(const_cast<char*>(str.data() + old_size),need_size,buf,size);
+    HexDecode(const_cast<char*>(str.raw_data() + old_size),need_size,buf,size);
     return str;
 }
 
