@@ -54,4 +54,15 @@ bool IsOdd(unsigned long number) noexcept;
 *   若`number`为奇数,则返回`true`;否则返回`false`.
 
 
+### IsOverlap()
+
+```c++
+inline bool 
+IsOverlap(const void *left,size_t left_size,const void *right,size_t right_size) noexcept;
+```
+
+*   若`left,left_size`确定的缓冲区与`right,right_size`确定的缓冲区重叠,则返回真.
+*   缓冲区重叠意味着`left,left_size`确定的缓冲区与`right,right_size`确定的缓冲区的交集不
+    为空;所以很显然若`left`,`right`一方缓冲区中为空,则重叠总是为空,所以总是不重叠的.
+
 
