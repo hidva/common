@@ -1,6 +1,6 @@
 #include "hex_coding.h"
 #include "exception/errno_exception.h"
-#include "common/inlines.h"
+#include "common/inline_utils.h"
 
 #include <string.h>
 

@@ -31,9 +31,11 @@ auto PP_QQ_ANONYMOUS_NAME(on_exception_obj) = MakeOnException(f);
 ```
 
 
-## API Reference: inlines.h
+## API Reference: inline_utils.h
 
-*   该文件**只定义**`inline`函数! 存放着一些全局通用的工具函数.
+*   该文件**只定义**`inline`工具函数! 存放着一些全局通用的工具函数.
+*   由于该文件只定义了`inline`函数,而且`inline`函数只会在用到时才会展开,所以将大量`inline`
+    函数汇聚在一起除了不那么直观之外,并没有什么副作用了
 
 ### IsEven
 

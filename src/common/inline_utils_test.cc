@@ -1,5 +1,5 @@
 
-#include "inlines.h"
+#include "inline_utils.h"
 #include "gtest/gtest.h"
 
 TEST(IsEvenTest,test1)
