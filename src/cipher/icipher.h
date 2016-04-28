@@ -37,8 +37,8 @@ public:
 };
 
 struct ICipher::CipherResult {
-    size_t input_size;
-    size_t output_size;
+    size_t input_size = 0;
+    size_t output_size = 0;
 };
 
 template <typename StringType>
