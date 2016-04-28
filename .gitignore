@@ -29,8 +29,13 @@ ui_*.h
 
 *.autosave
 *.creator.user
+/pp_qq_common.config
+/pp_qq_common.creator
+/pp_qq_common.files
+/pp_qq_common.includes
 
 #QtCtreator Qml
 *.qmlproject.user
 *.qmlproject.user.*
+
 
