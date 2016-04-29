@@ -223,3 +223,191 @@ virtual void Increase(void *ptr,size_t n,int step) const;
 
 *   将`ptr,n`表示的计数器加`step`步骤;若`step`为负数,则相当于减去`abs(step)`.
 
+
+## API Reference: block_cipher.h
+
+### BlockCipher
+
+*   `BlockCipher`;用于块加解密;`BlockCipher`中并没有关于加解密的具体实现;其更像是胶水;将
+    底层的块加密算法,加密模式,填充模式粘合在一起,然后提供加解密功能.如下对`BlockCipher`的使用
+    案例:
+
+    ```c++
+    // 当需要使用 AES 以 CBC 工作模式来进行加解密时
+
+    // 首先构造底层块加解密算法;
+    AESCipher aes_cipher;
+    aes_cipher.SetKey(key_ptr,key_size /* 32 */);
+
+    // 再构造工作模式对象;
+    CBCCipherMode cbc_mode;
+    cbc_mode.SetIV(iv_ptr,iv_size);
+
+    // 然后构造一个 BlockCipher 对象将 aes_cipher,cbc_mode 粘合起来提供加解密功能.
+    BlockCipher aes_cbc_cipher(&aes_cipher,&cbc_mode);
+
+    // 最后就可以使用 aes_cbc_cipher 进行 AES,CBC 模式进行加密
+    aes_cbc_cipher.EncryptUpdate(...);
+    aes_cbc_cipher.EncryptUpdate(...);
+    aes_cbc_cipher.EncryptFinal(...);
+
+    // 或者解密
+    aes_cbc_cipher.DecryptUpdate(...);
+    aes_cbc_cipher.DecryptUpdate(...);
+    aes_cbc_cipher.DecryptFinal(...);
+
+    // 如果需要更换密钥:
+    aes_cipher.SetKey(new_key_ptr,new_key_size);
+
+    // 或者需要更换 IV:
+    cbc_mode.SetIV(iv_ptr,iv_size);
+
+    // 然后再进行加解密时,就会使用已经更改过的密钥或者 IV 了.
+    ```
+
+    从上述例子可以看出:
+
+    1.  BlockCipher 内部保存的只是块加密,工作模式基类的指针;然后指针指向着真正的实现;(话说
+        如果这里很多地方都是虚函数的调用形式;所以如果开销过大的话,可以利用模板来实现.有空再以
+        模板的形式实现一份,然后基准测试一下).
+
+    2.  BlockCipher 并没有提供参数设置与获取接口;而是有具体的块加密算法,工作模式实现来提供的.
+        毕竟不同的工作模式倒是需要不同的参数,如 CTR 工作模式可能需要计数器的实现(参见`Counter`),
+        而 CBC 工作模式则需要 IV.
+
+*   如何实现一个可以作为`BlockCipher`参数的块加密,继承`BlockCipherImpl`即可.
+*   如何实现一个可以作为`BlockCipher`参数的工作模式,继承`BlockCipherMode`即可.
+*   如何实现一个可以作为`BlockCipher`参数的填充模式,继承`BlockCipherPaddingMode`即可.
+
+#### 构造函数
+
+```c++
+BlockCipher(BlockCipherImpl *cipher_impl,BlockCipherMode *mode_impl,BlockCipherPaddingMode *pading_impl);
+```
+
+*   构造一个`BlockCipher`对象.
+
+
+### BlockCipherMode
+
+*   工作模式 Wrapper;要想使一个工作模式可以被`BlockCipher`粘合,则需要继承该类并实现相应接口.
+
+#### IsNeedPadding()
+
+```c++
+virtual bool IsNeedPadding() const noexcept;
+```
+
+*   若返回`true`,则表明当前工作模式需要填充,如 cbc,ecb 等;若返回`false`,则表明当前工作模式
+    不需要填充,而 ctr,ofb,cfb 等.
+
+#### OnCipherBegin()
+
+```c++
+virtual void OnCipherBegin(BlockCipher *block_cipher);
+```
+
+*   仅在一次加密(或解密)过程开始时调用;负责初始化工作模式.
+*   此时也需要初始化对应的加密算法;如: CTR 模式中无论是加密,还是解密都需要将加密算法初始化为加
+    密模式.
+
+
+*   Implemention Note: 在调用该函数时,`block_cipher`对象已经被初始化
+
+#### Update()
+
+```c++
+virtual void Update(BlockCipher *block_cipher,void *dst,const void *src,size_t size);
+```
+
+*   对`[src,src + size)`确定的缓冲区进行加密(或解密),并且将结果输出到`dst`指向的缓冲区中.
+
+*   `PARAM:size`;
+    -   若本次工作模式需要填充,则`size`一定是数据块长的整数倍;
+    -   若当前工作模式不需要填充,则`size`可能是块长的整数倍;或者是不足一块
+
+*   `PARAM: dst`;指向着输出缓冲区,长度为`size`;`dst`可能与`src`相同,指向着同一个缓冲区,但
+    绝不会重叠.
+
+*   Implemention Note: 当`size`不足一块时,此时也有一次加密(或解密)过程要结束的语义!实现可以
+    据此干点优化啥的.
+
+#### OnCipherEnd()
+
+```cpp
+virtual void OnCipherEnd(BlockCipher *block_cipher);
+```
+
+*   在一次加密(或解密)过程结束时调用.
+
+*   Implemention Note: 在调用该函数之后,`block_cipher`本身才会执行逆初始化过程.
+
+
+### BlockCipherImpl
+
+#### SetKey
+
+```cpp
+virtual void SetKey(const void *key,size_t size);
+```
+
+*   设置密钥
+
+#### kEncryptMode,kDecryptMode,SetKey,InitMode
+
+```cpp
+enum {
+    kEncryptMode,
+    kDecryptMode
+};
+
+
+virtual void InitMode(int mode);
+```
+
+*   将当前加解密算法的模式初始化为加密模式,或者解密模式.
+
+*   Not important: 本来我认为加解密想下面这样使用就行:
+
+    ```cpp
+    BlockCipherImpl cipher;
+    cipher.SetKey(key_ptr,key_size);
+    cipher.Encrypt(out,in);
+    cipher.Encrypt(out,in);
+    ```
+
+    然后看了一下,openssl,nettle 这些加解密库中对加解密算法的接口是这样的:
+
+    ```c
+    AES_key aes_ctx;
+    aes_set_encrypt_key(&aes_ctx,key_ptr,key_size);
+    // 然后使用 aes_ctx 进行加密;
+
+    aes_set_decrypt_key(&aes_ctx,key_ptr,key_size);
+    // 然后使用 aes_ctx 进行解密.
+    ```
+
+    也就是说在进行加解密之前还得初始化一下.
+
+#### Encrypt,Decrypt
+
+```cpp
+virtual void Encrypt(void *dst,const void *in);
+virtual void Decrypt(void *dst,const void *in);
+```
+
+*   对一块数据进行加密,或者解密.
+
+#### GetBlockSize()
+
+```cpp
+virtual unsigned GetBlockSize() const;
+```
+
+*   返回当前加密算法支持数据块的长度.
+
+### BlockCipherPaddingMode
+
+*   需要现在一直没用过填充模式,所以对填充模式不熟,等有时间再添加对填充模式的支持.
+
+
