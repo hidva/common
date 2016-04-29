@@ -1,4 +1,4 @@
-BIN := nettle_openssl_cipher_test
+BIN := run_test
 
 PROJECT_PATH := /home/pp-qq/project/org/pp-qq/common
 
@@ -10,7 +10,7 @@ CXX_SRC +=  $(PROJECT_PATH)/src/rrid/scope_exit_test.cc	\
 CXX_SRC += $(PROJECT_PATH)/src/hex_coding/hex_coding_test.cc	\
 	   $(PROJECT_PATH)/src/hex_coding/hex_coding.cc
 
-CXX_SRC += $(PROJECT_PATH)/src/common/inlines_test.cc
+CXX_SRC += $(PROJECT_PATH)/src/common/inline_utils_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/src/execute_time_get/execute_time_get_test.cc
 
@@ -31,6 +31,9 @@ CXX_SRC += $(PROJECT_PATH)/src/string/extended_std_string_test.cc	\
 	   $(PROJECT_PATH)/src/string/string_piece.cc	\
 	   $(PROJECT_PATH)/src/string/string_piece_test.cc
 
+CXX_SRC += $(PROJECT_PATH)/src/cipher/counter.cc $(PROJECT_PATH)/src/cipher/counter_test.cc	\
+	$(PROJECT_PATH)/src/cipher/block_cipher.cc
+
 C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
 
 C_CXX_SHARED_CFLAGS += -I$(PROJECT_PATH)/gtest/ -I$(PROJECT_PATH)/gtest/include
@@ -42,7 +45,7 @@ LDFLAGS := -pthread
 
 # nettle
 C_CXX_SHARED_CFLAGS += -I/home/pp-qq/lib/nettle/include
-LDFLAGS += -L/home/pp-qq/lib/nettle/lib -lnettle 
+LDFLAGS += -L/home/pp-qq/lib/nettle/lib -lnettle
 
 # openssl
 LDFLAGS += -lcrypto

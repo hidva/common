@@ -10,6 +10,7 @@ struct Counter {
     Counter() = default;
 
     inline void Skip(int n) noexcept;
+
     inline void Begin(void *ptr,size_t n) const;
     inline void Inc(void *ptr,size_t n) const;
 
