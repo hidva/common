@@ -1,6 +1,6 @@
 BIN := run_test
 
-PROJECT_PATH := /home/pp-qq/project/org/pp-qq/common
+PROJECT_PATH := /home/wangwei/project/org/pp-qq/common
 
 CXX_SRC :=  $(PROJECT_PATH)/test/$(BIN).cc
 
@@ -32,7 +32,8 @@ CXX_SRC += $(PROJECT_PATH)/src/string/extended_std_string_test.cc	\
 	   $(PROJECT_PATH)/src/string/string_piece_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/src/cipher/counter.cc $(PROJECT_PATH)/src/cipher/counter_test.cc	\
-	$(PROJECT_PATH)/src/cipher/block_cipher.cc
+	$(PROJECT_PATH)/src/cipher/block_cipher.cc \
+    $(PROJECT_PATH)/src/cipher/memxor.cc $(PROJECT_PATH)/src/cipher/memxor_test.cc
 
 C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
 
@@ -44,8 +45,8 @@ C_CXX_SHARED_CFLAGS += -I$(PROJECT_PATH)/src/
 LDFLAGS := -pthread
 
 # nettle
-C_CXX_SHARED_CFLAGS += -I/home/pp-qq/lib/nettle/include
-LDFLAGS += -L/home/pp-qq/lib/nettle/lib -lnettle
+#C_CXX_SHARED_CFLAGS += -I/home/pp-qq/lib/nettle/include
+#LDFLAGS += -L/home/pp-qq/lib/nettle/lib -lnettle
 
 # openssl
 LDFLAGS += -lcrypto

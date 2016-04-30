@@ -390,7 +390,7 @@ virtual void InitMode(int mode);
     也就是说在进行加解密之前还得初始化一下.
 
 #### Encrypt,Decrypt
-
+ 
 ```cpp
 virtual void Encrypt(void *dst,const void *in);
 virtual void Decrypt(void *dst,const void *in);
@@ -409,5 +409,24 @@ virtual unsigned GetBlockSize() const;
 ### BlockCipherPaddingMode
 
 *   需要现在一直没用过填充模式,所以对填充模式不熟,等有时间再添加对填充模式的支持.
+
+## API Reference: memxor.h
+
+### Memxor
+
+```cpp
+void Memxor(void *dst,const void *ptr,size_t n);
+```
+
+*   将`[dst,dst + n]`与`[ptr,ptr +n ]`按字节异或,并将结果存放到`dst`中.
+*   `PARAM:dst`;可以与`ptr`相同,但绝不能重叠!!!
+
+
+```cpp
+void Memxor(void *dst,const void *a,const void *b,size_t n);
+```
+
+*   将`[a,a + n]`与`[b,b + n]`异或,并将结果存放到`dst`指向的缓冲区中.
+*   `PARAM:dst,a,b,n`;`[a,a + n]`,`[b,b + n]`,`[dst,dst + n]`三个缓冲区不能重叠!
 
 
