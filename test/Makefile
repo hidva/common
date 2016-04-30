@@ -1,4 +1,4 @@
-BIN := run_test
+BIN := memxor_benchmark
 
 PROJECT_PATH := /home/wangwei/project/org/pp-qq/common
 
