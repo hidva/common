@@ -51,5 +51,10 @@ StringType HexDecode(const char *buf,size_t size)
     return bytes;
 }
 
+template <typename StringType>
+StringType HexDecode(const char *buf)
+{
+    return HexDecode<StringType>(buf,strlen(buf));
+}
 
 #endif // ORG_PP_QQ_COMMON_HEX_CODING_HEX_CODING_H

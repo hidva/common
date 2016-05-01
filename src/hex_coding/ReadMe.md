@@ -57,3 +57,9 @@ StringType HexDecode(const char *buf,size_t size);
 *   将`[buf,buf + size)`确定的16进制字符串解码成二进制,并据此创建一个`StringType`对象来存放
     结果.
 
+```cpp
+template <typename StringType>
+StringType HexDecode(const char *buf);
+```    
+*   等同于`HexDecode(buf,strlen(buf))`;
+    
