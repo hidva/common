@@ -3,6 +3,8 @@
 
 
 #include <stddef.h>
+#include <string.h>
+
 #include "rrid/on_exception.h"
 
 
@@ -44,7 +46,7 @@ inline StringType HexEncode(const void *data,size_t size)
 }
 
 template <typename StringType>
-StringType HexDecode(const char *buf,size_t size)
+inline StringType HexDecode(const char *buf,size_t size)
 {
     StringType bytes;
     HexDecode(bytes,buf,size);
@@ -52,7 +54,7 @@ StringType HexDecode(const char *buf,size_t size)
 }
 
 template <typename StringType>
-StringType HexDecode(const char *buf)
+inline StringType HexDecode(const char *buf)
 {
     return HexDecode<StringType>(buf,strlen(buf));
 }
