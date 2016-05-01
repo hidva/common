@@ -29,6 +29,9 @@ struct ExtendedStdString : public std::string {
     explicit inline ExtendedStdString(const std::string &);
     explicit inline ExtendedStdString(std::string &&);
 
+    inline ExtendedStdString& operator=(const ExtendedStdString &other);
+    inline ExtendedStdString& operator=(ExtendedStdString &&other);
+
     using std::string::operator=;
 
     inline const value_type& cfront() const;
@@ -111,6 +114,17 @@ auto ExtendedStdString::cdata() const -> const value_type*
     return c_str();
 }
 
+ExtendedStdString& ExtendedStdString::operator=(const ExtendedStdString &other)
+{
+    operator=(static_cast<const std::string&>(other));
+    return *this;
+}
+
+ExtendedStdString& ExtendedStdString::operator=(ExtendedStdString &&other)
+{
+    operator=(static_cast<std::string&&>(std::move(other)));
+    return *this;
+}
 
 auto ExtendedStdString::raw_data() -> value_type*
 {

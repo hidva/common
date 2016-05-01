@@ -458,3 +458,52 @@ TEST(ExtendedStdStringTest,OperatorGreaterEqual)
     Test("Hello","Hello");
     Test("World","Hello");
 }
+
+TEST(ExtendedStdStringTest,OperatorAssign)
+{
+    auto Test = [] (const char *dst,const char *src) {
+        std::string dst_str(dst);
+        std::string src_str(src);
+        
+        ExtendedStdString dst_ext_str(dst);
+        ExtendedStdString src_ext_str(src);
+        
+        dst_str = src_str;
+        dst_ext_str = src_ext_str;
+        
+        EXPECT_EQ(dst_str,dst_ext_str);
+        EXPECT_EQ(src_str,src_ext_str);
+    };
+    
+    Test("","");
+    Test("","Hello");
+    Test("Hello","");
+    Test("Hello","World");
+    Test("Hello","Hello");
+    Test("World","Hello");
+}
+
+TEST(ExtendedStdStringTest,OperatorAssign1)
+{
+    auto Test = [] (const char *dst,const char *src) {
+        std::string dst_str(dst);
+        std::string src_str(src);
+        
+        ExtendedStdString dst_ext_str(dst);
+        ExtendedStdString src_ext_str(src);
+        
+        dst_str = std::move(src_str);
+        dst_ext_str = std::move(src_ext_str);
+        
+        EXPECT_EQ(dst_str,dst_ext_str);
+        EXPECT_EQ(src_str,src_ext_str);
+        EXPECT_EQ(src_str.empty(),src_ext_str.empty());
+    };
+    
+    Test("","");
+    Test("","Hello");
+    Test("Hello","");
+    Test("Hello","World");
+    Test("Hello","Hello");
+    Test("World","Hello");
+}
