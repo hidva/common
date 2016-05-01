@@ -3,7 +3,10 @@
 #include "exception/errno_exception.h"
 #include "cipher/aes_cipher.h"
 
-constexpr auto g_AES_set_key_func[] {AES_set_encrypt_key,AES_set_decrypt_key};
+namespace {
+using AES_set_key_func_p = int (*) (const unsigned char *userKey, const int bits,AES_KEY *key);
+constexpr AES_set_key_func_p g_AES_set_key_func[] {AES_set_encrypt_key,AES_set_decrypt_key};    
+}
 
 void AESCipher::InitMode(int mode)
 {
@@ -20,7 +23,7 @@ void AESCipher::SetKey(const void *key,size_t size)
      *
      * 是的,我们这里依赖 openssl 的实现,如果 openssl 实现更改,那么别忘了在这加个检测~
      */
-    key_ptr_ = key;
+    key_ptr_ = static_cast<const unsigned char*>(key);
     key_size_bits_ = (size << 3);
     return ;
 }

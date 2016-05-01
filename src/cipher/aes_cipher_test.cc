@@ -24,9 +24,9 @@ void AESCipherTest::SetUp()
     key24 = HexDecode<ExtendedStdString>("010203040506070809101112131415161718192021222324");
     key32 = HexDecode<ExtendedStdString>("0102030405060708091011121314151617181920212223242526272829303132");
 
-    ciphertext16 = HexDecode<ExtendedStdString>("");
-    ciphertext24 = HexDecode<ExtendedStdString>("");
-    ciphertext32 = HexDecode<ExtendedStdString>("");
+    ciphertext16 = HexDecode<ExtendedStdString>("798D9A2404FF1F3CE1DC816394D1B894");
+    ciphertext24 = HexDecode<ExtendedStdString>("20D4DBFA7D80B5EB42E5AE33D28BE136");
+    ciphertext32 = HexDecode<ExtendedStdString>("C44C9C9AB7DF3756DB30CBA59213513E");
     return ;
 }
 
@@ -86,10 +86,12 @@ TEST_F(AESCipherTest,EncryptDecrypt)
         cipher.Decrypt(buf.raw_data(),buf.const_raw_data());
         EXPECT_EQ(plaintext,buf);
     };
-
-    Test(ciphertext16,key16);
-    Test(ciphertext24,key24);
-    Test(ciphertext32,key32);
+    
+    for (int i = 0; i < 33; ++i) {        
+        Test(ciphertext16,key16);
+        Test(ciphertext24,key24);
+        Test(ciphertext32,key32);
+    }
 }
 
 
