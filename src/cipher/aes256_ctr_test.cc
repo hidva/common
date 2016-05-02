@@ -62,9 +62,9 @@ TEST(AES256CTRCipherTest,test)
                 ExtendedStdString ciphertext;
 
                 for (int d = 0; d <= z - 2; ++d) {
-                    auto size_before = block_cipher.size();
+                    auto size_before = ciphertext.size();
                     EXPECT_EQ(AESCipher::kBlockSize,block_cipher.EncryptUpdate(ciphertext,expect_plaintext.const_raw_data() + d * AESCipher::kBlockSize,AESCipher::kBlockSize));
-                    EXPECT_EQ(AESCipher::kBlockSize,block_cipher.size() - size_before);
+                    EXPECT_EQ(AESCipher::kBlockSize,ciphertext.size() - size_before);
                 }
                 auto *left_ptr = expect_plaintext.const_raw_data();
                 if (z - 1 > 0)
@@ -76,7 +76,8 @@ TEST(AES256CTRCipherTest,test)
                     EXPECT_EQ(left_size,ciphertext.size() - size_before);
                 }
                 ASSERT_EQ(expect_plaintext.size(),ciphertext.size());
-                ASSERT_NE(expect_plaintext,ciphertext);
+                if (!expect_plaintext.empty())
+                    ASSERT_NE(expect_plaintext,ciphertext);
 
                 if (expect_ciphertext.empty())
                     expect_ciphertext = ciphertext;
@@ -102,9 +103,9 @@ TEST(AES256CTRCipherTest,test)
                     EXPECT_EQ(left_size,cipher_result.input_size);
                     EXPECT_EQ(left_size,cipher_result.output_size);
                 }
-
-                ASSERT_NE(expect_plaintext,ciphertext);
-                ASSERT_FALSE(expect_ciphertext.empty());
+                
+                if (!expect_plaintext.empty())
+                    ASSERT_NE(expect_plaintext,ciphertext);
                 EXPECT_EQ(expect_ciphertext,ciphertext);
             }
 
@@ -135,7 +136,7 @@ TEST(AES256CTRCipherTest,test)
             // 测试解密 2,3;
             for (int z = 0; z <= static_cast<int>(x); ++z) {
                 ExtendedStdString plaintext = expect_ciphertext;
-                const char *iptr = plaintext.raw_data();
+                char *iptr = plaintext.raw_data();
 
                 for (int d = 0; d <= z - 2; ++d) {
                     auto cipher_result = block_cipher.DecryptUpdate(iptr,AESCipher::kBlockSize,iptr,AESCipher::kBlockSize);

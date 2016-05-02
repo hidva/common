@@ -10,9 +10,9 @@ void CTRCipherMode::OnCipherBegin(BlockCipher *block_cipher)
 {
     BlockCipherImpl *cipher = block_cipher->GetCipherImpl();
 
-    auto block_size = cipher->GetBlockSize();
+    int block_size = cipher->GetBlockSize();
     if (block_size > kBlockSizeMax)
-        THROW(EINVAL,"当前正在使用的块加密算法支持的数据块过长;BlockSizeMax: %zu;BlockSize: %zu",kBlockSizeMax,block_size);
+        THROW(EINVAL,"当前正在使用的块加密算法支持的数据块过长;BlockSizeMax: %d;BlockSize: %d",kBlockSizeMax,block_size);
 
     counter_impl_->Begin(next_counter_,block_size);
     cipher->InitMode(BlockCipherImpl::kEncryptMode);
@@ -41,7 +41,7 @@ void CTRCipherMode::Update(BlockCipher *block_cipher,void *dst,const void *src,s
         if (optr == iptr) {
             unsigned char counter_buffer[kBlockSizeMax];
             while (size > 0) {
-                memcpy(counter_buffer_,next_counter_,block_size);
+                memcpy(counter_buffer,next_counter_,block_size);
                 counter_impl_->Inc(next_counter_,block_size);
 
                 cipher->Encrypt(counter_buffer,counter_buffer);

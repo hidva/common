@@ -24,7 +24,7 @@ struct BlockCipher;
 struct BlockCipherMode {
     virtual bool IsNeedPadding() const noexcept = 0;
     virtual void OnCipherBegin(BlockCipher *block_cipher) = 0;
-    virtual void Update(BlockCipher *block_cipher,void *dst,const void *src,size_t size);
+    virtual void Update(BlockCipher *block_cipher,void *dst,const void *src,size_t size) = 0;
     virtual void OnCipherEnd(BlockCipher *block_cipher) = 0;
 };
 
@@ -35,6 +35,10 @@ struct BlockCipherPaddingMode {
 struct BlockCipher : public ICipher {
     inline BlockCipher(BlockCipherImpl *cipher_impl,BlockCipherMode *mode_impl,BlockCipherPaddingMode *pading_impl) noexcept;
 
+    using ICipher::EncryptUpdate;
+    using ICipher::EncryptFinal;
+    using ICipher::DecryptUpdate;
+    using ICipher::DecryptFinal;
 public:
     CipherResult EncryptUpdate(void *dst,size_t max_size,const void *ptr,size_t size) override;
     CipherResult EncryptFinal(void *dst,size_t max_size,const void *ptr,size_t size) override;
