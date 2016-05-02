@@ -5,6 +5,11 @@
 #include "cipher/block_cipher.h"
 
 struct CTRCipherMode : public BlockCipherMode {
+
+    inline void SetCounterImpl(pp_qq::Counter *impl) noexcept;
+    inline pp_qq::Counter* GetCounterImpl() const noexcept;
+
+public:
     bool IsNeedPadding() const noexcept override;
     void OnCipherBegin(BlockCipher *block_cipher) override;
     void Update(BlockCipher *block_cipher,void *dst,const void *src,size_t size) override;
@@ -12,7 +17,7 @@ struct CTRCipherMode : public BlockCipherMode {
 
 private:
 
-    Counter *counter_impl_ = nullptr;
+    pp_qq::Counter *counter_impl_ = nullptr;
 
     /* 这里可以用 ExtendedStdString next_counter_;然后在 OnCipherBegin() 时分配空间.
      *
@@ -24,6 +29,18 @@ private:
     };
     unsigned char next_counter_[kBlockSizeMax];
 };
+
+void CTRCipherMode::SetCounterImpl(pp_qq::Counter *impl) noexcept
+{
+    counter_impl_ = impl;
+    return ;
+}
+
+pp_qq::Counter* CTRCipherMode::GetCounterImpl() const noexcept
+{
+    return counter_impl_;
+}
+
 
 
 #endif // ORG_PP_QQ_COMMON_CIPHER_CTR_CIPHER_MODE_H
