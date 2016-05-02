@@ -39,5 +39,15 @@
         "name":"log",
         "files":["src/log/"],
         "dependency":["formatter"]
+    },
+    {   
+        "name":"cipher",
+        "files":["src/cipher/"],
+        "dependency":["common","exception"]
+    },
+    {
+        "name":"string",
+        "files":["src/string/"],
+        "dependency":["exception"]
     }
 ]
