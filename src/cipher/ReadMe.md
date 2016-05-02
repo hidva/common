@@ -59,13 +59,7 @@ virtual CipherResult EncryptFinal(void *dst,size_t max_size,const void *ptr,size
 *   首先调用`EncryptUpdate(dst,max_size,ptr,size)`进行加密,然后对剩下部分执行填充后加密.
 *   同时该函数也有结束一次加密过程的语义!
 
-*   `RETURN:input_size`;指定了使用输入缓冲区中多少字节数,若内部使用了填充策略,则返回填充后
-    的字节数;即:`input_size - size`为被填充的字节数.
-
-*   `RETURN:output_size`;指定了使用了输出缓冲区中的多少字节数;当输出缓冲区不足时,将会抛出异
-    常
-
-*   Implemention Note: 需要考虑到`dst,max_size`与`ptr,size`可能会相交的可能性!
+*   其他与`EncryptUpdate(void *dst,size_t max_size,const void *ptr,size_t size)`一致.
 
 ```c++
 template <typename StringType>
