@@ -1,11 +1,11 @@
 
 [
-    {   
+    {
         "name":"common",
         "files":["src/common/"],
         "dependency":[]
     },
-    {   
+    {
         "name":"rrid",
         "files":["src/rrid/"],
         "dependency":["common"]
@@ -35,15 +35,20 @@
         "files":["src/execute_time_get/"],
         "dependency":["glibc_cxx_wrap"]
     },
-    {   
+    {
         "name":"log",
         "files":["src/log/"],
         "dependency":["formatter"]
     },
-    {   
+    {
         "name":"cipher",
         "files":["src/cipher/"],
         "dependency":["common","exception"]
+    },
+    {
+        "name":"digest",
+        "files":["src/digest/"],
+        "dependency":["exception"]
     },
     {
         "name":"string",
