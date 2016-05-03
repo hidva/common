@@ -4114,6 +4114,11 @@ TEST(SHA256DigestTest,GetDigestSize)
     EXPECT_EQ(SHA256Digest::kDigestSize,sha256_ctx.GetDigestSize());
 }
 
+/* [ RUN      ] SHA256DigestTest.test
+ * [       OK ] SHA256DigestTest.test (112165 ms)
+ *
+ * 所以很耗时.
+ */
 TEST(SHA256DigestTest,test)
 {
     SHA256Digest sha256_ctx;
