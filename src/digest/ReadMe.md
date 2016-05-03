@@ -36,7 +36,7 @@ void Reset();
 #### GetDigestSize()
 
 ```cpp
-int GetDigestSize() const;
+int GetDigestSize();
 ```
 
 *   返回摘要值的长度,以字节为单位.
