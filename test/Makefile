@@ -1,6 +1,6 @@
 BIN := run_test
 
-PROJECT_PATH := /home/wangwei/project/org/pp-qq/common
+PROJECT_PATH := /home/pp-qq/project/org/pp-qq/common/
 
 CXX_SRC :=  $(PROJECT_PATH)/test/$(BIN).cc
 
@@ -36,6 +36,9 @@ CXX_SRC += $(PROJECT_PATH)/src/cipher/counter.cc $(PROJECT_PATH)/src/cipher/coun
     $(PROJECT_PATH)/src/cipher/memxor.cc $(PROJECT_PATH)/src/cipher/memxor_test.cc \
     $(PROJECT_PATH)/src/cipher/aes_cipher.cc $(PROJECT_PATH)/src/cipher/aes_cipher_test.cc	\
 	$(PROJECT_PATH)/src/cipher/aes256_ctr_test.cc $(PROJECT_PATH)/src/cipher/ctr_cipher_mode.cc
+
+CXX_SRC += $(PROJECT_PATH)/src/digest/digest.cc $(PROJECT_PATH)/src/digest/sha256_digest.cc	\
+	$(PROJECT_PATH)/src/digest/sha256_digest_test.cc
 
 C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
 
