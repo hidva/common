@@ -25,8 +25,6 @@ CXX_SRC += $(PROJECT_PATH)/src/exception/errno_exception.cc \
 
 CXX_SRC += $(PROJECT_PATH)/src/formatter/stdio_formatter_test.cc
 
-CXX_SRC += $(PROJECT_PATH)/gtest/src/gtest-all.cc
-
 CXX_SRC += $(PROJECT_PATH)/src/string/extended_std_string_test.cc	\
 	   $(PROJECT_PATH)/src/string/string_piece.cc	\
 	   $(PROJECT_PATH)/src/string/string_piece_test.cc
@@ -42,7 +40,9 @@ CXX_SRC += $(PROJECT_PATH)/src/digest/digest.cc $(PROJECT_PATH)/src/digest/sha25
 
 C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
 
-C_CXX_SHARED_CFLAGS += -I$(PROJECT_PATH)/gtest/ -I$(PROJECT_PATH)/gtest/include
+# gtest 编译配置
+gtest_install_prefix := /home/pp-qq/lib/gtest
+C_CXX_SHARED_CFLAGS += -I$(gtest_install_prefix)/include
 
 C_CXX_SHARED_CFLAGS += -I$(PROJECT_PATH)/src/
 
@@ -55,6 +55,10 @@ LDFLAGS := -pthread
 
 # openssl
 LDFLAGS += -lcrypto
+
+# gtest 链接配置
+
+LDFLAGS += -L$(gtest_install_prefix)/lib -lgtest
 
 
 CFLAGS := $(C_CXX_SHARED_CFLAGS)
