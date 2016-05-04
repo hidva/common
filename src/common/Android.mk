@@ -33,8 +33,11 @@ LOCAL_EXPORT_C_INCLUDES := $($(LOCAL_MODULE)_export_c_includes)
 endif
 
 LOCAL_SRC_FILES :=
+LOCAL_CPPFLAGS += -std=gnu++11
+
 
 LOCAL_CPP_FEATURES := rtti exceptions
+LOCAL_EXPORT_CPPFLAGS += -std=gnu++11
 
 include $(BUILD_STATIC_LIBRARY)
 
