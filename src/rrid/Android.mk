@@ -35,7 +35,7 @@ endif
 LOCAL_SRC_FILES :=
 
 LOCAL_CPP_FEATURES := rtti exceptions
-
+LOCAL_STATIC_LIBRARIES := pp_qq_common_common
 include $(BUILD_STATIC_LIBRARY)
 
 LOCAL_PATH := $(LOCAL_PATH_BAK)
