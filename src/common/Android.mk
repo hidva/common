@@ -5,7 +5,9 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := pp_qq_common_string
+
+LOCAL_MODULE := pp_qq_common_common
+
 ifdef $(LOCAL_MODULE)_c_includes
 LOCAL_C_INCLUDES := $($(LOCAL_MODULE)_c_includes)
 endif
@@ -29,11 +31,11 @@ endif
 ifdef $(LOCAL_MODULE)_export_c_includes
 LOCAL_EXPORT_C_INCLUDES := $($(LOCAL_MODULE)_export_c_includes)
 endif
-LOCAL_SRC_FILES := string_piece.cc
+
+LOCAL_SRC_FILES :=
 
 LOCAL_CPP_FEATURES := rtti exceptions
-LOCAL_STATIC_LIBRARIES := pp_qq_common_exception
-include $(BUILD_STATIC_LIBRARY)
 
+include $(BUILD_STATIC_LIBRARY)
 
 LOCAL_PATH := $(LOCAL_PATH_BAK)
