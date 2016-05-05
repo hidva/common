@@ -55,7 +55,7 @@ LDFLAGS := -pthread
 LDFLAGS += -lnettle
 
 # openssl
-LDFLAGS += -lcrypto
+#LDFLAGS += -lcrypto
 
 # gtest 链接配置
 
