@@ -52,6 +52,7 @@ LDFLAGS := -pthread
 # nettle
 #C_CXX_SHARED_CFLAGS += -I/home/pp-qq/lib/nettle/include
 #LDFLAGS += -L/home/pp-qq/lib/nettle/lib -lnettle
+LDFLAGS += -lnettle
 
 # openssl
 LDFLAGS += -lcrypto
