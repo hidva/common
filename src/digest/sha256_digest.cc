@@ -4,33 +4,25 @@
 #include "exception/errno_exception.h"
 
 
-void SHA256Digest::Update(const void *ptr,size_t s)
+void SHA256Digest::Update(const void *ptr,size_t s) noexcept
 {
-    PP_QQ_CHECK(SHA256_Update(&ctx_,ptr,s) == 1);
+    sha256_update(&ctx_,s,static_cast<const uint8_t*>(ptr));
     return ;
 }
 
-void SHA256Digest::Final(void *dst,size_t max_size)
+void SHA256Digest::Final(void *dst,size_t max_size) noexcept
 {
-    if (max_size >= kDigestSize) {
-        PP_QQ_CHECK(SHA256_Final(static_cast<unsigned char*>(dst),&ctx_) == 1);
-    } else {
-        unsigned char buffer[kDigestSize];
-        PP_QQ_CHECK(SHA256_Final(buffer,&ctx_) == 1);
-        memcpy(dst,buffer,max_size);
-    }
-
-    Reset();
+    sha256_digest(&ctx_,max_size,static_cast<uint8_t*>(dst));
     return ;
 }
 
-void SHA256Digest::Reset()
+void SHA256Digest::Reset() noexcept
 {
-    PP_QQ_CHECK(SHA256_Init(&ctx_) == 1);
+    sha256_init(&ctx_);
     return ;
 }
 
-int SHA256Digest::GetDigestSize()
+int SHA256Digest::GetDigestSize() noexcept
 {
     return kDigestSize;
 }
