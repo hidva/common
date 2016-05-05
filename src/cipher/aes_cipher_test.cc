@@ -86,8 +86,8 @@ TEST_F(AESCipherTest,EncryptDecrypt)
         cipher.Decrypt(buf.raw_data(),buf.const_raw_data());
         EXPECT_EQ(plaintext,buf);
     };
-    
-    for (int i = 0; i < 33; ++i) {        
+
+    for (int i = 0; i < 33; ++i) {
         Test(ciphertext16,key16);
         Test(ciphertext24,key24);
         Test(ciphertext32,key32);
