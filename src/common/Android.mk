@@ -42,4 +42,16 @@ LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/..
 
 include $(BUILD_STATIC_LIBRARY)
 
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pp_qq_common_common_test
+
+LOCAL_SRC_FILES := inline_utils_test.cc
+
+LOCAL_STATIC_LIBRARIES := pp_qq_common_common googletest_static
+
+include $(BUILD_STATIC_LIBRARY)
+
+
 LOCAL_PATH := $(LOCAL_PATH_BAK)

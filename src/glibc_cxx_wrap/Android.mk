@@ -39,5 +39,15 @@ LOCAL_STATIC_LIBRARIES := pp_qq_common_exception
 LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/../
 include $(BUILD_STATIC_LIBRARY)
 
+include $(CLEAR_VARS)
+
+module_for_test := pp_qq_common_glibc_cxx_wrap
+
+LOCAL_MODULE := $(module_for_test)_test
+LOCAL_SRC_FILES := test_1.cc  test_2.cc
+LOCAL_STATIC_LIBRARIES := googletest_static $(module_for_test)
+
+include $(BUILD_STATIC_LIBRARY)
+
 
 LOCAL_PATH := $(LOCAL_PATH_BAK)
