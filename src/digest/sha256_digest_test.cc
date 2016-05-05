@@ -4134,14 +4134,6 @@ TEST(SHA256DigestTest,test)
 
         for (size_t update_times = 1; update_times <= msg_size; ++update_times) {
 
-            // Reset() 测试.
-            {
-                for (size_t i = 0; i < update_times; ++i)
-                    sha256_ctx.Update(bad_msg,strlen(bad_msg));
-
-                sha256_ctx.Reset();
-            }
-
             const size_t update_size1 = msg_size / update_times;
             const size_t update_size2 = msg_size % update_times + update_size1;
 
@@ -4161,6 +4153,15 @@ TEST(SHA256DigestTest,test)
                 sha256_ctx.Update(iptr,update_size2);
                 sha256_ctx.Final(digest_buffer,osize);
                 EXPECT_EQ(0,memcmp(digest_buffer,expect_digest.const_raw_data(),osize));
+            }
+
+
+            // Reset() 测试.
+            {
+                for (size_t i = 0; i < update_times; ++i)
+                    sha256_ctx.Update(bad_msg,strlen(bad_msg));
+
+                sha256_ctx.Reset();
             }
         }
     }
