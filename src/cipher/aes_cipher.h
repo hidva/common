@@ -30,19 +30,4 @@ private:
 #endif
 
 
-#if 0
 
-1. 直接调用 InitMode() 会抛出异常
-2. 以不合法的 key 设置 InitMode() 会抛出异常.
-
-多次调用 Encrypt() 得到的结果是一样的.
-    不重叠;
-    重叠;
-
-多次调用 Decrypt()
-
-可复用性;AESCipher 对象的可
-
-
-
-#endif
