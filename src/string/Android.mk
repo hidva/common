@@ -30,9 +30,10 @@ ifdef $(LOCAL_MODULE)_export_c_includes
 LOCAL_EXPORT_C_INCLUDES := $($(LOCAL_MODULE)_export_c_includes)
 endif
 LOCAL_SRC_FILES := string_piece.cc
-
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../
 LOCAL_CPP_FEATURES := rtti exceptions
 LOCAL_STATIC_LIBRARIES := pp_qq_common_exception
+LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/../
 include $(BUILD_STATIC_LIBRARY)
 
 

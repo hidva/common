@@ -32,9 +32,11 @@ endif
 
 LOCAL_STATIC_LIBRARIES := pp_qq_common_formatter
 
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../
 LOCAL_SRC_FILES := pp_qq_log.cc
 
 LOCAL_CPP_FEATURES := rtti exceptions
+LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/../
 
 include $(BUILD_STATIC_LIBRARY)
 

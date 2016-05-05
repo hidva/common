@@ -34,11 +34,11 @@ endif
 
 LOCAL_SRC_FILES := aes_cipher.cc block_cipher.cc counter.cc ctr_cipher_mode.cc \
 	icipher.cc memxor.cc
-
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../
 LOCAL_CPP_FEATURES := rtti exceptions
 
 LOCAL_STATIC_LIBRARIES := pp_qq_common_exception
-
+LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/..
 include $(BUILD_STATIC_LIBRARY)
 
 LOCAL_PATH := $(LOCAL_PATH_BAK)
