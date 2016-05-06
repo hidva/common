@@ -47,7 +47,7 @@ module_for_test := pp_qq_common_cipher
 
 LOCAL_MODULE := $(module_for_test)_test
 LOCAL_SRC_FILES := aes256_ctr_test.cc aes_cipher_test.cc counter_test.cc memxor_test.cc
-LOCAL_STATIC_LIBRARIES := googletest_static $(module_for_test) pp_qq_common_string pp_qq_common_hex_coding
+LOCAL_STATIC_LIBRARIES := googletest_static $(module_for_test) pp_qq_common_string pp_qq_common_hex_coding nettle
 
 include $(BUILD_STATIC_LIBRARY)
 
