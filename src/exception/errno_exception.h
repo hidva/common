@@ -1,6 +1,7 @@
 #ifndef ORG_PP_QQ_COMMON_EXCEPTION_ERRNO_EXCEPTION_H
 #define ORG_PP_QQ_COMMON_EXCEPTION_ERRNO_EXCEPTION_H
 
+#include <errno.h>
 #include <string>
 #include <stdexcept>
 
