@@ -1,7 +1,7 @@
 #ifndef ORG_PP_QQ_COMMON_DIGEST_SHA256_DIGEST_H
 #define ORG_PP_QQ_COMMON_DIGEST_SHA256_DIGEST_H
 
-#include <nettle/sha.h>
+#include "nettle/sha.h"
 #include "digest/digest.h"
 
 struct SHA256Digest : public IDigest {

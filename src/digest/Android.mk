@@ -35,7 +35,7 @@ endif
 LOCAL_SRC_FILES := digest.cc sha256_digest.cc
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../
 LOCAL_CPP_FEATURES := rtti exceptions
-LOCAL_STATIC_LIBRARIES := pp_qq_common_exception
+LOCAL_STATIC_LIBRARIES := pp_qq_common_exception nettle
 LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/..
 include $(BUILD_STATIC_LIBRARY)
 
@@ -45,7 +45,7 @@ module_for_test := pp_qq_common_digest
 
 LOCAL_MODULE := $(module_for_test)_test
 LOCAL_SRC_FILES := sha256_digest_test.cc
-LOCAL_STATIC_LIBRARIES := googletest_static $(module_for_test) pp_qq_common_string pp_qq_common_hex_coding nettle
+LOCAL_STATIC_LIBRARIES := googletest_static $(module_for_test) pp_qq_common_string pp_qq_common_hex_coding
 
 include $(BUILD_STATIC_LIBRARY)
 
