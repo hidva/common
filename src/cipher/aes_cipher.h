@@ -4,16 +4,16 @@
 
 #include "cipher/block_cipher.h"
 
-#include <openssl/aes.h>
+#include "nettle/aes.h"
 
 struct AESCipher : public BlockCipherImpl {
     void InitMode(int mode) override;
-    void SetKey(const void *key,size_t size) override;
+    void SetKey(const void *key,size_t size) noexcept override;
 
-    void Encrypt(void *dst,const void *in) override;
-    void Decrypt(void *dst,const void *in) override;
+    void Encrypt(void *dst,const void *in) noexcept override;
+    void Decrypt(void *dst,const void *in) noexcept override;
 
-    unsigned GetBlockSize() const override;
+    unsigned GetBlockSize() const noexcept override;
 
 public:
 
@@ -22,9 +22,9 @@ public:
     };
 
 private:
-    AES_KEY ctx_;
-    const unsigned char *key_ptr_ = nullptr;
-    size_t key_size_bits_ = 0; // 单位是位,而不是字节!
+    struct aes_ctx ctx_;
+    const uint8_t *key_ptr_ = nullptr;
+    size_t key_size_ = 0;
 };
 
 #endif

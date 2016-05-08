@@ -1,6 +1,5 @@
 #include "string/string_piece.h"
 #include "string/extended_std_string.h"
-#include "log/pp_qq_log.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -130,7 +129,6 @@ TEST(StringPieceTest,ConstructTest5)
                 }
 
                 for (size_t len = 0; len <= str.size() - pos; ++len) {
-                    //PP_QQ_LOG_D("buf_size: %zu;content_size: %zu;pos: %zu;len: %zu",buf_size,content_size,pos,len);
                     StringPiece str2(buf2.data(),buf_size,str,pos,len);
                     ASSERT_EQ(buf2.const_raw_data(),str2.const_raw_data());
                     ASSERT_EQ(len,str2.size());

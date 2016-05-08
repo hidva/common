@@ -35,8 +35,8 @@ CXX_SRC += $(PROJECT_PATH)/src/cipher/counter.cc $(PROJECT_PATH)/src/cipher/coun
     $(PROJECT_PATH)/src/cipher/aes_cipher.cc $(PROJECT_PATH)/src/cipher/aes_cipher_test.cc	\
 	$(PROJECT_PATH)/src/cipher/aes256_ctr_test.cc $(PROJECT_PATH)/src/cipher/ctr_cipher_mode.cc
 
-CXX_SRC += $(PROJECT_PATH)/src/digest/digest.cc $(PROJECT_PATH)/src/digest/sha256_digest.cc	\
-	$(PROJECT_PATH)/src/digest/sha256_digest_test.cc
+CXX_SRC += $(PROJECT_PATH)/src/digest/digest.cc $(PROJECT_PATH)/src/digest/sha3_256.cc	\
+	$(PROJECT_PATH)/src/digest/sha3_256_test.cc
 
 C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
 
@@ -52,9 +52,10 @@ LDFLAGS := -pthread
 # nettle
 #C_CXX_SHARED_CFLAGS += -I/home/pp-qq/lib/nettle/include
 #LDFLAGS += -L/home/pp-qq/lib/nettle/lib -lnettle
+LDFLAGS += -lnettle
 
 # openssl
-LDFLAGS += -lcrypto
+#LDFLAGS += -lcrypto
 
 # gtest 链接配置
 

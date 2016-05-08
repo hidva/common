@@ -4,7 +4,7 @@
 #include "string/extended_std_string.h"
 
 #include <openssl/aes.h>
-#include <nettle/aes.h>
+#include "nettle/aes.h"
 
 int
 main(int ,char **)
