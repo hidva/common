@@ -37,7 +37,7 @@ LOCAL_SRC_FILES := pp_qq_log.cc
 
 LOCAL_CPP_FEATURES := rtti exceptions
 LOCAL_EXPORT_C_INCLUDES += $(LOCAL_PATH)/../
-
+LOCAL_EXPORT_LDLIBS := -llog
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
