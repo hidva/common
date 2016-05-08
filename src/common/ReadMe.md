@@ -57,7 +57,7 @@ bool IsOdd(unsigned long number) noexcept;
 ### IsOverlap()
 
 ```c++
-inline bool 
+inline bool
 IsOverlap(const void *left,size_t left_size,const void *right,size_t right_size) noexcept;
 ```
 
@@ -65,4 +65,9 @@ IsOverlap(const void *left,size_t left_size,const void *right,size_t right_size)
 *   缓冲区重叠意味着`left,left_size`确定的缓冲区与`right,right_size`确定的缓冲区的交集不
     为空;所以很显然若`left`,`right`一方缓冲区中为空,则重叠总是为空,所以总是不重叠的.
 
+## API Reference: config.h
+
+### PP_QQ_COMMON_ON_ANDROID
+
+*   若该宏被定义,则表明当前在 Android 平台上,并且该宏的值为 Android API 的版本号.
 
