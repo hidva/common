@@ -1,6 +1,7 @@
 #ifndef ORG_PP_QQ_COMMON_EXCEPTION_ERRNO_EXCEPTION_H
 #define ORG_PP_QQ_COMMON_EXCEPTION_ERRNO_EXCEPTION_H
 
+#include <errno.h>
 #include <string>
 #include <stdexcept>
 
@@ -102,7 +103,7 @@ int ErrnoException::GetErrorNumber() const noexcept
 } // namespace pp_qq
 
 #define PP_QQ_CONSTRUCT_ERRNOEXCEPTION_OBJ(args.../* errnum,format */) ::pp_qq::ErrnoException (__PRETTY_FUNCTION__,##args)
-#define THROW(args.../* errnum,format,... */) throw PP_QQ_CONSTRUCT_ERRNOEXCEPTION_OBJ(args);
+#define THROW(args.../* errnum,format,... */) throw PP_QQ_CONSTRUCT_ERRNOEXCEPTION_OBJ(args)
 
 #define PP_QQ_CHECK(cond,args...)   \
     if (!(cond))    \

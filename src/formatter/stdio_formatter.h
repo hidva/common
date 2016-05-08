@@ -26,7 +26,7 @@ StringType& VAppendStdioFormat(StringType &str,const char *f,va_list ap)
         char buf[kBufSize];
         int ret = vsnprintf(buf,kBufSize,f,ap);
         if (ret < 0)
-            throw std::runtime_error(std::string{"VAppendStdioFormat Error!FormatArg: "} + f);
+            throw std::runtime_error("VAppendStdioFormat Error!");
 
         if (static_cast<size_t>(ret) < kBufSize) {
             str.append(buf,ret);
@@ -45,7 +45,7 @@ StringType& VAppendStdioFormat(StringType &str,const char *f,va_list ap)
              */
             int ret2 = vsnprintf(const_cast<char*>(str.data()) + kOldSize,ret + 1,f,ap1);
             if (ret2 < 0 || ret2 != ret)
-                throw std::runtime_error(std::string{"VAppendStdioFormat Error!FormatArg: "} + f);
+                throw std::runtime_error("VAppendStdioFormat Error!");
             str.resize(kOldSize + ret);
         }
     }

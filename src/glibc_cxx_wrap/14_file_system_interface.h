@@ -1,10 +1,13 @@
 #ifndef ORG_PP_QQ_COMMON_GLIBC_CXX_WRAP_14_FILE_SYSTEM_INTERFACE_H
 #define ORG_PP_QQ_COMMON_GLIBC_CXX_WRAP_14_FILE_SYSTEM_INTERFACE_H
 
+#include <linux/limits.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
-#include <linux/limits.h>
+#include <unistd.h>
 
 #include "exception/errno_exception.h"
 #include "glibc_cxx_wrap/macros.h"
