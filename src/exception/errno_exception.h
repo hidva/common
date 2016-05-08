@@ -80,6 +80,8 @@ struct ErrnoException : public std::exception {
 
     const char* what() const noexcept override;
 
+    inline int GetErrorNumber() const noexcept;
+
 private:
     mutable std::string buf_for_what_;
     std::string function_name_;
@@ -89,6 +91,12 @@ private:
 private:
     ErrnoException() = delete;
 };
+
+
+int ErrnoException::GetErrorNumber() const noexcept
+{
+    return err_number_;
+}
 
 
 } // namespace pp_qq
