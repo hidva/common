@@ -1,6 +1,11 @@
 #ifndef ORG_PP_QQ_COMMON_LOG_PP_QQ_LOG_H
 #define ORG_PP_QQ_COMMON_LOG_PP_QQ_LOG_H
 
+#include "common/config.h"
+#if defined(PP_QQ_COMMON_ON_ANDROID)
+#include <android/log.h>
+#endif
+
 /* 日志级别定义.
  * * ALL,SLIENT 仅会在定义 CURRENT_LOG_LEVEL 时会使用到,不要显式使用这 2 个级别.
  *
@@ -23,14 +28,24 @@
 #define PP_QQ_LOG_LEVEL_SLIENT   8
 
 // 将 format 将参数格式化为一条日志,追加'\n'后;将日志信息送往 stdout 中.
-void stdoutHandler(int level,const char *tag,const char *file,int line,const char *func,const char *prettyFunc,const char *format,...) noexcept __attribute__((__format__(printf,7,8)));
+void StdoutHandler(int level,const char *tag,const char *file,int line,const char *func,const char *prettyFunc,const char *format,...) noexcept __attribute__((__format__(printf,7,8)));
+
+#if defined(PP_QQ_COMMON_ON_ANDROID)
+void LogcatHandler(int level,const char *tag,const char *file,int line,const char *func,const char *prettyFunc,const char *format,...) noexcept __attribute__((__format__(printf,7,8)));
+#endif
 
 #if !defined(PP_QQ_CURRENT_LOG_LEVEL)
 #	define PP_QQ_CURRENT_LOG_LEVEL PP_QQ_LOG_LEVEL_ALL
 #endif
 
 #if !defined(PP_QQ_DEFAULT_HANDLER)
-#	define PP_QQ_DEFAULT_HANDLER stdoutHandler
+
+#if defined(PP_QQ_COMMON_ON_ANDROID)
+#define PP_QQ_DEFAULT_HANDLER LogcatHandler
+#else
+#define PP_QQ_DEFAULT_HANDLER StdoutHandler
+#endif
+
 #endif
 
 #if !defined(PP_QQ_DEFAULT_LOG_TAG)

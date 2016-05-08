@@ -13,12 +13,10 @@ struct ScopeGuardImplBase {
     ScopeGuardImplBase() noexcept(true) = default;
     inline void Dismiss() noexcept(true);
 
-#if defined(ENABLE_PP_QQ_COMMON_TEST)
     bool dismissed() noexcept(true)
     {
         return dismissed_;
     }
-#endif
 
 protected:
     /* 若为真,则表明不执行回调;
