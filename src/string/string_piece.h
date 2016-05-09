@@ -8,6 +8,11 @@
 
 #include "exception/errno_exception.h"
 
+
+#if !defined(UINT_FAST32_MAX)
+#define UINT_FAST32_MAX 0xFFFFFFFFU
+#endif
+
 /* StringPiece 内部是延迟追加'\0'的.
  */
 struct StringPiece {
