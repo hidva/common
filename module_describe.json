@@ -51,6 +51,11 @@
         "dependency":["exception"]
     },
     {
+        "name":"jni_utils",
+        "files":["src/jni_utils/"],
+        "dependency":["exception"]
+    },
+    {
         "name":"string",
         "files":["src/string/"],
         "dependency":["exception"]
