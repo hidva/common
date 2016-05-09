@@ -5,6 +5,11 @@
 #include "glibc_cxx_wrap/cxx_time.h"
 #include <stdint.h>
 
+#if !defined(UINT_FAST64_MAX)
+#define UINT_FAST64_MAX 0xFFFFFFFFFFFFFFFFULL
+#endif
+
+
 namespace execute_time_get {
 
 namespace detail {
