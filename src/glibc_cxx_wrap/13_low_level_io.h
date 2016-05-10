@@ -47,6 +47,30 @@ inline int cxx_open(const char *path,int flags,...)
     return cxx_vopen(path,flags,ap);
 }
 
+inline int vopenat(int dirfd, const char *pathname, int flags, va_list ap)
+{
+    return OpenHaveModeArg(flags) ? openat(dirfd,pathname,flags,va_arg(ap,int)) : openat(dirfd,pathname,flags);
+}
+
+inline int cxx_vopenat(int dirfd, const char *pathname, int flags, va_list ap)
+{
+    int fd = -1;
+    GLIBC_CXX_WRAP_1_ERRNO(fd = vopenat(dirfd,pathname,flags,ap),"dirfd: %d,pathname: %s,flags: %#x",dirfd,pathname,flags);
+    return fd;
+}
+
+inline int cxx_openat(int dirfd, const char *pathname, int flags, ...)
+{
+    va_list ap;
+    va_start(ap,flags);
+    ON_SCOPE_EXIT (va_end_ap) {
+        va_end(ap);
+    };
+
+    return cxx_vopenat(dirfd,pathname,flags,ap);
+}
+
+
 inline int vfcntl(int fd,int cmd,va_list ap)
 {
     return fcntl(fd,cmd,va_arg(ap,void*));

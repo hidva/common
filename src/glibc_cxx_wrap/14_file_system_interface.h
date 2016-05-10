@@ -155,6 +155,62 @@ inline mode_t cxx_umask (mode_t mask) noexcept
     return umask(mask);
 }
 
+inline void cxx_mkdirat(int dirfd, const char *pathname, mode_t mode)
+{
+    GLIBC_CXX_WRAP_1_ERRNO(mkdirat(dirfd,pathname,mode),"dirfd: %d;path: %s;mode: %#x",dirfd,pathname,mode);
+    return ;
+}
+
+inline void cxx_mkdir(const char *pathname, mode_t mode)
+{
+    GLIBC_CXX_WRAP_1_ERRNO(mkdir(pathname,mode),"path: %s;mode: %#x",pathname,mode);
+    return ;
+}
+
+inline void cxx_rmdir(const char *pathname)
+{
+    GLIBC_CXX_WRAP_1_ERRNO(rmdir(pathname),"path: %s",pathname);
+    return ;
+}
+
+inline char* cxx_realpath(const char *path, char *resolved_path)
+{
+    char *ret = nullptr;
+    GLIBC_CXX_WRAP_NULL_ERRNO(ret = realpath(path,resolved_path),"path: %s",path);
+    return ret;
+}
+
+/**
+ * 将 realpath(path) 后的结果追加到 str 中.
+ */
+template <typename StringType>
+void AppendRealpath(StringType &str,const char *path)
+{
+    const size_t old_size = str.size();
+
+    str.resize(old_size + PATH_MAX - 1);
+    ON_EXCEPTIN {
+        str.resize(old_size);
+    };
+
+    char *optr = str.data() + old_size;
+    cxx_realpath(path,optr);
+    str.resize(old_size + strlen(optr));
+    return ;
+}
+
+/**
+ * 根据 path 的 realpath() 结果创建一个字符串对象.
+ */
+template <typename StringType>
+inline StringType CreateStringFromRealPath(const char *path)
+{
+    StringType tmp;
+    AppendRealpath(tmp,path);
+    return tmp;
+}
+
+
 
 #endif // ORG_PP_QQ_COMMON_GLIBC_CXX_WRAP_14_FILE_SYSTEM_INTERFACE_H
 
