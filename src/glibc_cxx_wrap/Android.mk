@@ -44,8 +44,8 @@ include $(CLEAR_VARS)
 module_for_test := pp_qq_common_glibc_cxx_wrap
 
 LOCAL_MODULE := $(module_for_test)_test
-LOCAL_SRC_FILES := test_1.cc  test_2.cc
-LOCAL_STATIC_LIBRARIES := googletest_static $(module_for_test)
+LOCAL_SRC_FILES := test_1.cc  test_2.cc 14_file_system_interface_test.cc
+LOCAL_STATIC_LIBRARIES := googletest_static $(module_for_test) pp_qq_common_string
 
 include $(BUILD_STATIC_LIBRARY)
 
