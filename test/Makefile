@@ -15,7 +15,8 @@ CXX_SRC += $(PROJECT_PATH)/src/common/inline_utils_test.cc
 CXX_SRC += $(PROJECT_PATH)/src/execute_time_get/execute_time_get_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/src/glibc_cxx_wrap/test_2.cc \
-	   $(PROJECT_PATH)/src/glibc_cxx_wrap/test_1.cc
+	   $(PROJECT_PATH)/src/glibc_cxx_wrap/test_1.cc	\
+	   $(PROJECT_PATH)/src/glibc_cxx_wrap/14_file_system_interface_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/src/log/pp_qq_log.cc \
 	   $(PROJECT_PATH)/src/log/pp_qq_log_test.cc
