@@ -1,4 +1,4 @@
-BIN := run_test
+BIN := mmap_test
 
 PROJECT_PATH := /home/pp-qq/project/org/pp-qq/common/
 
