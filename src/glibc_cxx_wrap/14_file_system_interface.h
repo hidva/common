@@ -210,6 +210,17 @@ inline StringType CreateStringFromRealPath(const char *path)
     return tmp;
 }
 
+inline void cxx_truncate(const char *path, off_t length)
+{
+    GLIBC_CXX_WRAP_1_ERRNO(truncate(path,length),"path: %s,length: %lld",path,static_cast<long long>(length));
+    return ;
+}
+
+inline void cxx_ftruncate(int fd, off_t length)
+{
+    GLIBC_CXX_WRAP_1_ERRNO(ftruncate(fd,length),"fd: %d,length: %lld",fd,static_cast<long long>(length));
+    return ;
+}
 
 
 #endif // ORG_PP_QQ_COMMON_GLIBC_CXX_WRAP_14_FILE_SYSTEM_INTERFACE_H

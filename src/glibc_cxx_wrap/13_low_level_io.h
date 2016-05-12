@@ -234,5 +234,25 @@ inline int cxx_ioctl(int d,unsigned long request,...)
     return cxx_vioctl(d,request,ap);
 }
 
+inline int cxx_dup(int oldfd)
+{
+    int ret;
+    GLIBC_CXX_WRAP_1_ERRNO(ret = dup(oldfd),"oldfd: %d",oldfd);
+    return ret;
+}
+
+inline int cxx_dup2(int oldfd, int newfd)
+{
+    int ret;
+    GLIBC_CXX_WRAP_1_ERRNO(ret = dup2(oldfd,newfd),"oldfd: %d,newfd: %d",oldfd,newfd);
+    return ret;
+}
+
+inline void cxx_close(int fd)
+{
+    GLIBC_CXX_WRAP_1_ERRNO(close(fd),"fd: %d",fd);
+    return ;
+}
+
 #endif // ORG_PP_QQ_COMMON_GLIBC_CXX_WRAP_13_LOW_LEVEL_IO_H
 
