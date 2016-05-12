@@ -17,10 +17,10 @@ inline char LogLevel2Char(int level)
 
 }
 
-void StdoutHandler(int level,const char *tag,const char */* file */,int /* line */,const char */* func */,const char */* prettyFunc */,const char *format,...) noexcept
+void StdoutHandler(int level,const char *tag,const char */* file */,int /* line */,const char *func,const char */* prettyFunc */,const char *format,...) noexcept
 {
     std::string log_msg;
-    AppendStdioFormat(log_msg,"%c/%s;pid: %d;thread: %#lx;",LogLevel2Char(level),tag,getpid(),pthread_self());
+    AppendStdioFormat(log_msg,"%c/%s;pid: %d;thread: %#lx;func: %s;",LogLevel2Char(level),tag,getpid(),pthread_self(),func);
 
     va_list ap;
     va_start(ap,format);
@@ -56,10 +56,10 @@ inline int Level2LogcatLevel(int common_level)
 
 }
 
-void LogcatHandler(int level,const char *tag,const char * /* file */,int /* line */,const char * /* func */,const char * /* prettyFunc */,const char *format,...) noexcept
+void LogcatHandler(int level,const char *tag,const char * /* file */,int /* line */,const char * func,const char * /* prettyFunc */,const char *format,...) noexcept
 {
     std::string log_msg;
-    AppendStdioFormat(log_msg,"pid: %d;threadid %#lx;",getpid(),pthread_self());
+    AppendStdioFormat(log_msg,"pid: %d;threadid %#lx;func: %s;",getpid(),pthread_self(),func);
 
     va_list ap;
     va_start(ap,format);
