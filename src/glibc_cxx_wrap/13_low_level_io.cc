@@ -4,7 +4,7 @@
 size_t ReadN(int fd,void *buf,size_t count)
 {
     // 该处代码已经经过测试.
-    unsigned char *optr = static_cast<char*>(buf);
+    unsigned char *optr = static_cast<unsigned char*>(buf);
     size_t osize = count;
     while (osize > 0) {
         ssize_t rc = read(fd,optr,osize);

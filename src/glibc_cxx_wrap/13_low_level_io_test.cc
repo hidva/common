@@ -6,6 +6,9 @@
 #include "common/config.h"
 #include "string/extended_std_string.h"
 
+#include <signal.h>
+
+
 namespace {
 
 /* 耗空熵池,当该函数返回时,熵池是空的.
@@ -28,6 +31,11 @@ void EatAllEntropy()
     return ;
 }
 
+void OnSig(int)
+{
+
+}
+
 }
 
 TEST(ReadNTest,test1)
@@ -43,7 +51,12 @@ TEST(ReadNTest,test1)
 
     EatAllEntropy();
 
-    char buf[1024];
+    auto old_handler = signal(SIGINT,OnSig);
+    ON_SCOPE_EXIT(recover_signal_handler) {
+        signal(SIGINT,old_handler);
+    };
+
+    char buf[16];
     PP_QQ_LOG_I("开始测试 ReadN()这里你可以输入 CTRL+C 来生成一个中断信号,从而测试");
     PP_QQ_LOG_I("ReadN() 能否应付好中断");
     EXPECT_EQ(sizeof(buf),ReadN(fd,buf,sizeof(buf)));
@@ -54,7 +67,7 @@ const char *test_dir_path = "/sdcard";
 #else
 const char *test_dir_path = "/tmp";
 #endif
-constexpr size_t k4GB = 4 * 1024 * 1024 * 1024;
+constexpr size_t k4GB = 4UL * 1024UL * 1024UL * 1024UL;
 
 
 TEST(WriteNTest,test1)
@@ -74,7 +87,7 @@ TEST(WriteNTest,test1)
 
     struct stat filestat;
     cxx_fstat(fd,&filestat);
-    EXPECT_EQ(k4GB,filestat.st_size);
+    EXPECT_EQ(k4GB,static_cast<size_t>(filestat.st_size));
 
     cxx_lseek(fd,0,SEEK_SET);
 
