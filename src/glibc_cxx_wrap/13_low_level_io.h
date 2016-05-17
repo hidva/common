@@ -254,5 +254,24 @@ inline void cxx_close(int fd)
     return ;
 }
 
+/**
+ * 从 fd 中读取 count 字节,并存放到 buf 指向着的缓冲区中.
+ * 该函数仅当读取了 count 字节,或者读取到 EOF 时才会返回;其他时刻均不会返回,哪怕是被信号中断.
+ *
+ * @param fd 若为非阻塞描述符,则行为未定义!!!
+ * @return 实际读取的字节数,一般为 count;若 < count,则表明读取到 EOF 了.
+ */
+size_t ReadN(int fd,void *buf,size_t count);
+size_t PreadN(int fd, void *buf, size_t count, off_t offset);
+
+/**
+ * 将 [buf,count) 确定的内容写入到 fd 指向的文件中.
+ * 总会将 count 字节写入到 fd 中,即使被信号中断什么的.
+ *
+ * @param fd 若为非阻塞描述符,则行为未定义!!!
+ * @return void 因为总会将 count 写入到 fd 中,所以不需要提供返回值.
+ */
+void WriteN(int fd,const void *buf,size_t count);
+void PwriteN(int fd,const void *buf,size_t count,off_t offset);
 #endif // ORG_PP_QQ_COMMON_GLIBC_CXX_WRAP_13_LOW_LEVEL_IO_H
 
