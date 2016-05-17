@@ -102,6 +102,7 @@ TEST(PreadNTest,test)
     ExtendedStdString expected_content(k4GB,'x');
     for (size_t i = 0; i < k4GB; ++i)
         expected_content[i] = static_cast<unsigned char>(i);
+    PP_QQ_LOG_I("Now Begin");
 
     int fd = cxx_open(test_dir_path,O_RDWR | O_TMPFILE | O_EXCL,0666);
     ON_SCOPE_EXIT (closefd) {
@@ -110,7 +111,7 @@ TEST(PreadNTest,test)
 
     WriteN(fd,expected_content.const_raw_data(),expected_content.size());
 
-    for (size_t i = 0; i < 128U; ++i) {
+    for (size_t i = 0; i < 64U; ++i) {
         ExtendedStdString actual_content(k4GB,'x');
         auto rc = PreadN(fd,actual_content.raw_data(),actual_content.size(),i);
         EXPECT_EQ(k4GB - i,rc);
@@ -123,8 +124,9 @@ TEST(PwriteNTest,test)
     ExtendedStdString expected_content(k4GB,'x');
     for (size_t i = 0; i < k4GB; ++i)
         expected_content[i] = static_cast<unsigned char>(i);
+    PP_QQ_LOG_I("Now Begin");
 
-    for (size_t i = 0; i < 128U; ++i) {
+    for (size_t i = 0; i < 32U; ++i) {
         int fd = cxx_open(test_dir_path,O_RDWR | O_TMPFILE | O_EXCL,0666);
         ON_SCOPE_EXIT (closefd) {
             close(fd);
