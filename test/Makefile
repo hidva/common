@@ -1,4 +1,4 @@
-BIN := mmap_test
+BIN := run_test
 
 PROJECT_PATH := /home/pp-qq/project/org/pp-qq/common/
 
@@ -16,7 +16,9 @@ CXX_SRC += $(PROJECT_PATH)/src/execute_time_get/execute_time_get_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/src/glibc_cxx_wrap/test_2.cc \
 	   $(PROJECT_PATH)/src/glibc_cxx_wrap/test_1.cc	\
-	   $(PROJECT_PATH)/src/glibc_cxx_wrap/14_file_system_interface_test.cc
+	   $(PROJECT_PATH)/src/glibc_cxx_wrap/14_file_system_interface_test.cc	\
+	   $(PROJECT_PATH)/src/glibc_cxx_wrap/13_low_level_io.cc	\
+	   $(PROJECT_PATH)/src/glibc_cxx_wrap/13_low_level_io_test.cc
 
 CXX_SRC += $(PROJECT_PATH)/src/log/pp_qq_log.cc \
 	   $(PROJECT_PATH)/src/log/pp_qq_log_test.cc
