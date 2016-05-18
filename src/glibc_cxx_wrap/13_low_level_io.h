@@ -19,6 +19,15 @@
 #define O_TMPFILE 020200000
 #endif
 
+#ifndef O_PATH
+#define O_PATH 010000000
+#endif
+
+#if !defined(F_DUPFD_CLOEXEC)
+#define F_DUPFD_CLOEXEC 1030
+#endif
+
+
 inline bool OpenHaveModeArg(int oflag) noexcept
 {
     return (((oflag) & O_CREAT) != 0 || ((oflag) & O_TMPFILE) == O_TMPFILE);
