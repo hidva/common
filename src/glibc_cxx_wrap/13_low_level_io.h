@@ -257,6 +257,13 @@ inline int cxx_dup2(int oldfd, int newfd)
     return ret;
 }
 
+inline int cxx_dup3(int oldfd, int newfd, int flags)
+{
+    int rc;
+    GLIBC_CXX_WRAP_1_ERRNO(rc = dup3(oldfd,newfd,flags),"oldfd: %d,newfd: %d,flags: %#x",oldfd,newfd,flags);
+    return rc;
+}
+
 inline void cxx_close(int fd)
 {
     GLIBC_CXX_WRAP_1_ERRNO(close(fd),"fd: %d",fd);
