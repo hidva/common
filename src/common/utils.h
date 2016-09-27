@@ -114,8 +114,8 @@ inline void LineTraverse(const char *src, F &&f) {
  *      weight_t GetWeight(elem) noexcept;
  */
 template <typename Iter,typename F>
-Iter GetWeightedRandom(Iter const begin, Iter const end, F &&GetWeight) {
-#if 0
+Iter GetWeightedRandom(Iter const begin, Iter const end, F GetWeight) {
+#if 1
     thread_local std::mt19937_64 g_random_engine{std::random_device{}()};
 #else
     std::random_device g_random_engine;

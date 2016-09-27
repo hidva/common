@@ -2,6 +2,48 @@
 #include "inline_utils.h"
 #include "gtest/gtest.h"
 
+TEST(StrLenTest, test) {
+    EXPECT_EQ((size_t)0, StrLen(nullptr));
+    EXPECT_EQ((size_t)0, StrLen(""));
+
+    const char *test_str = "SheHuiZhuYiJieBanRen";
+    EXPECT_EQ((size_t)strlen(test_str), StrLen(test_str));
+}
+
+namespace {
+
+bool init_done = false;
+
+InitHelper g_init_1(
+    [&] () noexcept {
+        init_done = true;
+        return ;
+    };
+);
+
+} // namespace
+
+TEST(InitHelperTest, test) {
+    ASSERT_TRUE(init_done);
+}
+
+TEST(NormalizedTest, test) {
+    auto DoTest = [] (long actual_sec, long actual_usec,
+            long expected_sec, long expected_usec)  {
+        struct timeval actual;
+        actual.tv_sec = actual_sec;
+        actual.tv_usec = actual_usec;
+        Normalized(actual);
+        EXPECT_EQ(expected_sec, actual.tv_sec);
+        EXPECT_EQ(expected_usec, actual.tv_usec);
+    };
+
+    DoTest(3, 99999, 3, 99999);
+    DoTest(3, 3000003, 6, 3);
+}
+
+
+
 TEST(IsEvenTest,test1)
 {
     EXPECT_TRUE(IsEven(0));

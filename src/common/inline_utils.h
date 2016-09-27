@@ -62,7 +62,7 @@ inline size_t StrLen(const char *s) noexcept
 struct InitHelper {
 
     template <typename F>
-    InitHelper(F &&f) {
+    InitHelper(F &&f) noexcept {
         (std::forward<F>(f))();
         return ;
     }

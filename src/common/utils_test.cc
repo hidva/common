@@ -82,6 +82,11 @@ namespace {
 
 }
 
+TEST(GetUtf8LetterNumberTest, test) {
+    EXPECT_EQ(0, GetUtf8LetterNumber(""));
+    EXPECT_EQ(18, GetUtf8LetterNumber("Hello，文明富强。！·.,、【】"));
+}
+
 TEST(LoopbackTraverseTest,test) {
     auto Test = [] (const std::vector<int> &v,
         const std::vector<int>::const_iterator ptr,
@@ -104,3 +109,15 @@ TEST(LoopbackTraverseTest,test) {
     Test(v4, v4.begin() + 2, {4, 8, 1, 2});
     Test(v4, v4.begin() + 3, {8, 1, 2, 4});
 }
+
+TEST(GetSetIntersectionNumberTest, test) {
+    auto DoTest = [] (const std::vector<int> &left, const std::vector<int> &right, size_t expect_val) {
+        EXPECT_EQ(expect_val, GetSetIntersectionNumber(left.cbegin(), left.cend(), right.cbegin(), right.cend()));
+    };
+
+    DoTest({1, 2}, {4, 5, 6, 7, 8}, 0);
+    DoTest({1, 2}, {1, 5, 6, 7, 8}, 1);
+    DoTest({1, 2}, {-2, -1, 1, 2, 8}, 2);
+}
+
+
