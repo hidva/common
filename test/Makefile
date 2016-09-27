@@ -1,5 +1,6 @@
 project_path := $(shell pwd)
-common_project_path := $(cd $(project_path)/.. && pwd)
+common_project_path := $(shell cd $(project_path)/.. && pwd)
+
 
 BIN := run_test
 
