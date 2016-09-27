@@ -33,7 +33,7 @@ TEST(LineTraverseTest,test)
         std::vector<std::string> result;
 
         LineTraverse(src, [&] (const char *ptr, size_t size) -> LineTraverseReturn {
-            ASSERT_NE(size, 0);
+            EXPECT_NE(size, 0U);
             result.emplace_back(ptr,size);
             return LineTraverseReturn::kContinue;
         });
@@ -42,37 +42,37 @@ TEST(LineTraverseTest,test)
     };
 
     auto result = Split("");
-    ASSERT_EQ(0,result.size());
+    ASSERT_EQ(0U,result.size());
 
     result = Split("\n\n\n");
-    ASSERT_EQ(0,result.size());
+    ASSERT_EQ(0U,result.size());
 
     result = Split("hello");
-    ASSERT_EQ(1,result.size());
+    ASSERT_EQ(1U,result.size());
     EXPECT_EQ("hello",result[0]);
 
     result = Split("hello\nworld");
-    ASSERT_EQ(2,result.size());
+    ASSERT_EQ(2U,result.size());
     EXPECT_EQ("hello",result[0]);
     EXPECT_EQ("world",result[1]);
 
     result = Split("hello\nworld\n\n\n");
-    ASSERT_EQ(2,result.size());
+    ASSERT_EQ(2U,result.size());
     EXPECT_EQ("hello",result[0]);
     EXPECT_EQ("world",result[1]);
 
     result = Split("\n\n\nhello\nworld");
-    ASSERT_EQ(2,result.size());
+    ASSERT_EQ(2U,result.size());
     EXPECT_EQ("hello",result[0]);
     EXPECT_EQ("world",result[1]);
 
     result = Split("\n\n\nhello\nworld\n\n\n");
-    ASSERT_EQ(2,result.size());
+    ASSERT_EQ(2U,result.size());
     EXPECT_EQ("hello",result[0]);
     EXPECT_EQ("world",result[1]);
 
     result = Split("\n\n\nhello\n\n\nworld\n\n\n");
-    ASSERT_EQ(2,result.size());
+    ASSERT_EQ(2U,result.size());
     EXPECT_EQ("hello",result[0]);
     EXPECT_EQ("world",result[1]);
 }
@@ -92,7 +92,7 @@ TEST(LoopbackTraverseTest,test) {
         const std::vector<int>::const_iterator ptr,
         const std::vector<int> &expected) {
         std::vector<int> tmp;
-        LoopbackTraverse(v.begin(), v.end(), ptr, [&] (int i) -> int {tmp.push_back(i); return 0; });
+        LoopbackTraverse(v.begin(), v.end(), ptr, [&] (std::vector<int>::const_iterator iter) -> int {tmp.push_back(*iter); return 0; });
         EXPECT_EQ(expected, tmp);
     };
 

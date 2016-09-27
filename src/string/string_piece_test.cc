@@ -53,7 +53,7 @@ TEST(StringPieceTest,ConstructTest1)
         ExtendedStdString buf(buf_size,'x');
 
         StringPiece str(buf.data(),buf_size);
-        ASSERT_EQ(0,str.size());
+        ASSERT_EQ(0U,str.size());
         ASSERT_TRUE(str.empty());
     }
 }
@@ -262,7 +262,7 @@ TEST(StringPieceTest,OperatorAssign4)
             ASSERT_ANY_THROW(str = ch);
         } else {
             str = ch;
-            ASSERT_EQ(1,str.size());
+            ASSERT_EQ(1U,str.size());
             ASSERT_EQ(ch,*str.const_raw_data());
         }
     }
@@ -277,7 +277,7 @@ TEST(StringPieceTest,BeginEndTest)
             const std::string content = CreateRandomStdString(content_size);
             StringPiece str(buf.raw_data(),buf_size,content.data(),content.size());
 
-            ASSERT_EQ(str.size(),std::distance(str.begin(),str.end()));
+            ASSERT_EQ(str.size(),(size_t)std::distance(str.begin(),str.end()));
             std::string content1(str.begin(),str.end());
             std::string content2;
             for (StringPiece::iterator iter = str.begin(); iter != str.end(); ++iter)
@@ -297,7 +297,7 @@ TEST(StringPieceTest,BeginConstEndConst)
             const std::string content = CreateRandomStdString(content_size);
             const StringPiece str(buf.raw_data(),buf_size,content.data(),content.size());
 
-            ASSERT_EQ(str.size(),std::distance(str.begin(),str.end()));
+            ASSERT_EQ(str.size(),(size_t)std::distance(str.begin(),str.end()));
             std::string content1(str.begin(),str.end());
             std::string content2;
             for (StringPiece::const_iterator iter = str.begin(); iter != str.end(); ++iter)
@@ -318,7 +318,7 @@ TEST(StringPieceTest,CBeginCEnd)
             const std::string content = CreateRandomStdString(content_size);
             StringPiece str(buf.raw_data(),buf_size,content.data(),content.size());
 
-            ASSERT_EQ(str.size(),std::distance(str.cbegin(),str.cend()));
+            ASSERT_EQ(str.size(),(size_t)std::distance(str.cbegin(),str.cend()));
             std::string content1(str.cbegin(),str.cend());
             std::string content2;
             for (StringPiece::const_iterator iter = str.cbegin(); iter != str.cend(); ++iter)

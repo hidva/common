@@ -12,7 +12,7 @@ TEST(HexEncodeTest,test1)
         unsigned char data[] {0x01};
         char buf[3];
         size_t size = HexEncode(buf,sizeof(buf),data,sizeof(data));
-        ASSERT_EQ(2,size);
+        ASSERT_EQ((size_t)2,size);
         buf[size] = '\0';
         EXPECT_STREQ("01",buf);
 

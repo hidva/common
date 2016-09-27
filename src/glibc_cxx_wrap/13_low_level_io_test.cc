@@ -67,12 +67,11 @@ const char *test_dir_path = "/sdcard";
 #else
 const char *test_dir_path = "/tmp";
 #endif
-constexpr size_t k4GB = 4UL * 1024UL * 1024UL * 1024UL;
-
+constexpr size_t kTestCap = 512UL * 1024UL * 1024UL;
 
 TEST(WriteNTest,test1)
 {
-    ExtendedStdString expected_content(k4GB,'x');
+    ExtendedStdString expected_content(kTestCap,'x');
 
     // 确保当 WriteN() 内部对 expected_content.const_raw_data() 的访问超界时,会触发 sigsegv.
     // 如果不掉用该接口,则根据 std::string 的实现,可能会多分配空间,从而超界时可能不会 SIGSEGV.
@@ -87,20 +86,20 @@ TEST(WriteNTest,test1)
 
     struct stat filestat;
     cxx_fstat(fd,&filestat);
-    EXPECT_EQ(k4GB,static_cast<size_t>(filestat.st_size));
+    EXPECT_EQ(kTestCap,static_cast<size_t>(filestat.st_size));
 
     cxx_lseek(fd,0,SEEK_SET);
 
-    ExtendedStdString actual_content(k4GB,'c');
-    EXPECT_EQ(k4GB,ReadN(fd,actual_content.raw_data(),actual_content.size()));
+    ExtendedStdString actual_content(kTestCap,'c');
+    EXPECT_EQ(kTestCap,ReadN(fd,actual_content.raw_data(),actual_content.size()));
 
     EXPECT_EQ(expected_content,actual_content);
 }
 
 TEST(PreadNTest,test)
 {
-    ExtendedStdString expected_content(k4GB,'x');
-    for (size_t i = 0; i < k4GB; ++i)
+    ExtendedStdString expected_content(kTestCap,'x');
+    for (size_t i = 0; i < kTestCap; ++i)
         expected_content[i] = static_cast<unsigned char>(i);
     PP_QQ_LOG_I("Now Begin");
 
@@ -112,17 +111,17 @@ TEST(PreadNTest,test)
     WriteN(fd,expected_content.const_raw_data(),expected_content.size());
 
     for (size_t i = 0; i < 64U; ++i) {
-        ExtendedStdString actual_content(k4GB,'x');
+        ExtendedStdString actual_content(kTestCap,'x');
         auto rc = PreadN(fd,actual_content.raw_data(),actual_content.size(),i);
-        EXPECT_EQ(k4GB - i,rc);
+        EXPECT_EQ(kTestCap - i,rc);
         EXPECT_EQ(0,memcmp(expected_content.const_raw_data() + i,actual_content.const_raw_data(),rc));
     }
 }
 
 TEST(PwriteNTest,test)
 {
-    ExtendedStdString expected_content(k4GB,'x');
-    for (size_t i = 0; i < k4GB; ++i)
+    ExtendedStdString expected_content(kTestCap,'x');
+    for (size_t i = 0; i < kTestCap; ++i)
         expected_content[i] = static_cast<unsigned char>(i);
     PP_QQ_LOG_I("Now Begin");
 
@@ -133,9 +132,10 @@ TEST(PwriteNTest,test)
         };
 
         PwriteN(fd,expected_content.const_raw_data(),expected_content.size(),i);
-        ExtendedStdString actual_content(k4GB,'x');
+        ExtendedStdString actual_content(kTestCap,'x');
         EXPECT_EQ(actual_content.size(),PreadN(fd,actual_content.raw_data(),actual_content.size(),i));
         EXPECT_EQ(expected_content,actual_content);
     }
 }
+
 

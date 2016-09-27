@@ -6,7 +6,7 @@ TEST(ExtendedStdStringTest,test1)
     {
         ExtendedStdString str;
         EXPECT_TRUE(str.empty());
-        EXPECT_EQ(0,str.size());
+        EXPECT_EQ(0U,str.size());
     }
 
     {

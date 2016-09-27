@@ -51,37 +51,37 @@ TEST(ScopeGuardImplTest, DifferentWaysToBind)
         // binding to member function.
         auto g = MakeScopeGuard(std::bind(&vector<int>::pop_back, &v));
     }
-    EXPECT_EQ(0, v.size());
+    EXPECT_EQ((size_t)0, v.size());
 
     {
         // bind member function with args. v is passed-by-value!
         auto g = MakeScopeGuard(std::bind(push_back, v, 2));
     }
-    EXPECT_EQ(0, v.size()); // push_back happened on a copy of v... fail!
+    EXPECT_EQ((size_t)0, v.size()); // push_back happened on a copy of v... fail!
 
     {
         // pass in an argument by pointer so to avoid copy.
         auto g = MakeScopeGuard(std::bind(push_back, &v, 4));
     }
-    EXPECT_EQ(1, v.size());
+    EXPECT_EQ((size_t)1, v.size());
 
     {
         // pass in an argument by reference so to avoid copy.
         auto g = MakeScopeGuard(std::bind(push_back, std::ref(v), 4));
     }
-    EXPECT_EQ(2, v.size());
+    EXPECT_EQ((size_t)2, v.size());
 
     {
         // lambda with a reference to v
         auto g = MakeScopeGuard([&] { v.push_back(5); });
     }
-    EXPECT_EQ(3, v.size());
+    EXPECT_EQ((size_t)3, v.size());
 
     {
         // lambda with a copy of v
         auto g = MakeScopeGuard([v] () mutable { v.push_back(6); });
     }
-    EXPECT_EQ(3, v.size());
+    EXPECT_EQ(3U, v.size());
 
     // functor object
     int n = 0;
@@ -150,9 +150,9 @@ void TestUndoAction(bool failure)
     } // all stack allocated in the mini-scope will be destroyed here.
 
     if (failure)
-        EXPECT_EQ(0, v.size()); // the action failed => undo insertion
+        EXPECT_EQ(0U, v.size()); // the action failed => undo insertion
     else
-        EXPECT_EQ(1, v.size()); // the action succeeded => keep insertion
+        EXPECT_EQ(1U, v.size()); // the action succeeded => keep insertion
 }
 
 TEST(ScopeGuardImplTest, UndoAction)

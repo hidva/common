@@ -68,7 +68,7 @@ template <typename F>
 void SplitTraverse(const char *src, size_t size, char const sepa, F &&f) {
     const char * const src_end = src + size;
 
-    for (const char *begin = src; begin = FindFirstNotOf(begin, src_end,sepa); ) {
+    for (const char *begin = src; (begin = FindFirstNotOf(begin, src_end,sepa)); ) {
         const char *end = FindFirstOf(begin + 1, src_end,sepa);
 
         if (f(begin, end - begin) == LineTraverseReturn::kBreak)

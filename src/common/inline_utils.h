@@ -3,7 +3,10 @@
 
 #include <time.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
+
+#include <utility>
 
 // 偶数
 inline bool IsEven(unsigned long number) noexcept

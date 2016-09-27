@@ -1,5 +1,5 @@
 
-#include "inline_utils.h"
+#include "common/inline_utils.h"
 #include "gtest/gtest.h"
 
 TEST(StrLenTest, test) {
@@ -18,7 +18,7 @@ InitHelper g_init_1(
     [&] () noexcept {
         init_done = true;
         return ;
-    };
+    }
 );
 
 } // namespace

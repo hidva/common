@@ -39,14 +39,14 @@ TEST(AppendStdioFormatTest,test1)
 
     {
         const std::string kOriginString{"HelloWorld"};
-        EXPECT_EQ(10,kOriginString.size());
+        EXPECT_EQ(10U, kOriginString.size());
         EXPECT_STREQ("HelloWorld",kOriginString.data());
 
         std::string str = kOriginString;
         AppendStdioFormat(str,"HelloWorld");
         EXPECT_EQ(std::string{"HelloWorldHelloWorld"},str);
 
-        EXPECT_EQ(10,kOriginString.size());
+        EXPECT_EQ(10U,kOriginString.size());
         EXPECT_STREQ("HelloWorld",kOriginString.data());
     }
 
@@ -58,14 +58,14 @@ TEST(AppendStdioFormatTest,test1)
 
     {
         const std::string kOriginString{"HelloWorld"};
-        EXPECT_EQ(10,kOriginString.size());
+        EXPECT_EQ(10U,kOriginString.size());
         EXPECT_STREQ("HelloWorld",kOriginString.data());
 
         std::string str = kOriginString;
         AppendStdioFormat(str,"Hello: %d;%s;%c",10,"world",'c');
         EXPECT_EQ(std::string{"HelloWorldHello: 10;world;c"},str);
 
-        EXPECT_EQ(10,kOriginString.size());
+        EXPECT_EQ(10U,kOriginString.size());
         EXPECT_STREQ("HelloWorld",kOriginString.data());
     }
 
