@@ -92,7 +92,7 @@ StringPiece& StringPiece::replace(const_iterator i1, const_iterator i2,const val
 }
 
 
-StringPiece& StringPiece::append(const value_type* s, size_type n)
+StringPiece& StringPiece::append(const void* s, size_type n)
 {
     size_type new_size = size_ + n;
     PP_QQ_CHECK(new_size <= capacity_,EINVAL,"new_size: %zu;capacity_: %zu",new_size,capacity_);

@@ -289,5 +289,6 @@ size_t PreadN(int fd, void *buf, size_t count, off_t offset);
  */
 void WriteN(int fd,const void *buf,size_t count);
 void PwriteN(int fd,const void *buf,size_t count,off_t offset);
+
 #endif // ORG_PP_QQ_COMMON_GLIBC_CXX_WRAP_13_LOW_LEVEL_IO_H
 

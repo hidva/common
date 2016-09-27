@@ -118,7 +118,7 @@ public:
 
     inline StringPiece& append(const StringPiece& str);
     inline StringPiece& append(const StringPiece& str, const size_type pos,size_type n);
-    StringPiece& append(const value_type* s, size_type n);
+    StringPiece& append(const void *s, size_type n);
     inline StringPiece& append(const value_type* s);
     inline StringPiece& append(size_type n, value_type c);
 #if 0

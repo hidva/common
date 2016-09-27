@@ -34,6 +34,9 @@ struct ExtendedStdString : public std::string {
 
     using std::string::operator=;
 
+    using std::string::append;
+    inline ExtendedStdString& append(const void *ptr,size_type s);
+
     inline const value_type& cfront() const;
     inline const value_type& cback() const;
     inline const_reference cat(size_type n) const;
@@ -47,7 +50,11 @@ struct ExtendedStdString : public std::string {
     inline const value_type* const_raw_data() const;
 };
 
-
+ExtendedStdString& ExtendedStdString::append(const void *ptr,size_type s)
+{
+    std::string::append(static_cast<const char*>(ptr),s);
+    return *this;
+}
 
 ExtendedStdString::ExtendedStdString()
 {
