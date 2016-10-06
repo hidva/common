@@ -1,3 +1,7 @@
+## Versioning
+
+This project follows the [semantic versioning](http://semver.org/) scheme. The API change and backwards compatibility rules are those indicated by SemVer.
+
 
 ## 简介
 
