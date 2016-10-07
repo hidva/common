@@ -42,8 +42,6 @@ TEST(NormalizedTest, test) {
     DoTest(3, 3000003, 6, 3);
 }
 
-
-
 TEST(IsEvenTest,test1)
 {
     EXPECT_TRUE(IsEven(0));
