@@ -17,6 +17,7 @@ CXX_SRC += $(common_project_path)/src/common/inline_utils_test.cc	\
 	$(common_project_path)/src/common/utils_test.cc	\
 	$(common_project_path)/src/common/utils.cc	
 	
+CXX_SRC += $(common_project_path)/src/concurrent/mutex_test.cc
 
 CXX_SRC += $(common_project_path)/src/execute_time_get/execute_time_get_test.cc
 
@@ -48,7 +49,7 @@ CXX_SRC += $(common_project_path)/src/string/extended_std_string_test.cc	\
 #CXX_SRC += $(common_project_path)/src/digest/digest.cc $(common_project_path)/src/digest/sha3_256.cc	\
 #	$(common_project_path)/src/digest/sha3_256_test.cc
 
-C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread
+C_CXX_SHARED_CFLAGS := -Wall -O0 -g -pthread -Wfatal-errors
 
 CFLAGS := 
 CXXFLAGS := 
