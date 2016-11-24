@@ -15,6 +15,7 @@ CXX_SRC += $(common_project_path)/src/hex_coding/hex_coding_test.cc	\
 
 CXX_SRC += $(common_project_path)/src/common/inline_utils_test.cc	\
 	$(common_project_path)/src/common/utils_test.cc	\
+	$(common_project_path)/src/common/lru_test.cc	\
 	$(common_project_path)/src/common/utils.cc	
 	
 CXX_SRC += $(common_project_path)/src/concurrent/mutex_test.cc
@@ -37,8 +38,8 @@ CXX_SRC += $(common_project_path)/src/exception/errno_exception.cc \
 CXX_SRC += $(common_project_path)/src/formatter/stdio_formatter_test.cc
 
 CXX_SRC += $(common_project_path)/src/string/extended_std_string_test.cc	\
-	$(common_project_path)/src/string/string_piece.cc	\
-	$(common_project_path)/src/string/string_piece_test.cc
+	$(common_project_path)/src/string/string_piece.cc	
+#	$(common_project_path)/src/string/string_piece_test.cc
 
 # CXX_SRC += $(common_project_path)/src/cipher/counter.cc $(common_project_path)/src/cipher/counter_test.cc	\
 #	$(common_project_path)/src/cipher/block_cipher.cc \
