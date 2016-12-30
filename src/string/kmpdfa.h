@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include <string.h>
+
 /**
  * DFA, 用来实现 KMP 算法.
  *
@@ -15,15 +17,16 @@
  *                    // 可以在任意线程同时调用 kmpdfa.Run() 进行匹配.
  */
 struct KMPDFA {
-    KMPDFA(const char *data, size_t size, bool case_insensitive = false) {
+    KMPDFA() = default;
+    KMPDFA(const char *data, size_t size, bool case_insensitive) {
         Compile(data, size, case_insensitive);
     }
 
-    KMPDFA(const std::string &pattern, bool case_insensitive = false) {
+    KMPDFA(const std::string &pattern, bool case_insensitive) {
         Compile(pattern, case_insensitive);
     }
 
-    KMPDFA(std::string &&pattern, bool case_insensitive = false) {
+    KMPDFA(std::string &&pattern, bool case_insensitive) {
         Compile(std::move(pattern), case_insensitive);
     }
 
@@ -36,19 +39,19 @@ struct KMPDFA {
      * @param case_insensitive 若为 true, 则表明使用大小写无关的方式来编译模式串, 之后在 Run() 时将使用大小写无关
      *  匹配. 若为 false, 则相反.
      */
-    void Compile(const char *data, size_t size, bool case_insensitive = false) {
+    void Compile(const char *data, size_t size, bool case_insensitive) {
         Compile(std::string{data, size}, case_insensitive);
         return ;
     }
 
-    void Compile(const std::string &pattern, bool case_insensitive = false) {
+    void Compile(const std::string &pattern, bool case_insensitive) {
         pattern_ = pattern;
         case_insensitive_ = case_insensitive;
         DoCompile();
         return ;
     }
 
-    void Compile(std::string &&pattern, bool case_insensitive = false) {
+    void Compile(std::string &&pattern, bool case_insensitive) {
         pattern_ = std::move(pattern);
         case_insensitive_ = case_insensitive;
         DoCompile();
@@ -92,7 +95,7 @@ private:
     size_t RunCS(const char *data, size_t size) const noexcept;
     size_t RunCIS(const char *data, size_t size) const noexcept;
 
-    using RunFP = decltype(&KMPDFA::Run);
+    using RunFP = decltype(&KMPDFA::RunCS);
 
     // 此时 pattern_, case_insensitive_ 已经初始化完毕. 此函数开始编译操作.
     void DoCompile() {
@@ -119,8 +122,8 @@ private:
     using CompileFP = decltype(&KMPDFA::DoCompile);
 
 private:
-    static constexpr CompileFP g_compile_func[] {&KMPDFA::DoCompileCS, &KMPDFA::DoCompileCIS};
-    static constexpr RunFP g_run_func[] {&KMPDFA::RunCS, &KMPDFA::RunCIS};
+    static const CompileFP g_compile_func[];
+    static const RunFP g_run_func[];
 
 private:
     std::string pattern_;

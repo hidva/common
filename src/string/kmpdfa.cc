@@ -10,7 +10,7 @@
 
 void KMPDFA::DoCompileCS() noexcept {
     state_t t = 0;
-    for (state_t s = 1; s < pattern_.size(); ++s) {
+    for (state_t s = 1; s < (state_t)pattern_.size(); ++s) {
         while (t != 0 && pattern_[t] != pattern_[s]) {
             t = fail_[t];
         }
@@ -25,7 +25,7 @@ void KMPDFA::DoCompileCS() noexcept {
 
 void KMPDFA::DoCompileCIS() noexcept {
     state_t t = 0;
-    for (state_t s = 1; s < pattern_.size(); ++s) {
+    for (state_t s = 1; s < (state_t)pattern_.size(); ++s) {
         while (t != 0 && ToUpper(pattern_[t]) != ToUpper(pattern_[s])) {
             t = fail_[t];
         }
@@ -51,7 +51,7 @@ size_t KMPDFA::RunCS(const char *data, size_t size) const noexcept {
         if (pattern_[s] == data[i]) {
             ++s;
 
-            if (s == pattern_.size()) {
+            if (s == (state_t)pattern_.size()) {
                 return (i + 1) - size;
             }
         }
@@ -71,7 +71,7 @@ size_t KMPDFA::RunCIS(const char *data, size_t size) const noexcept {
         if (ToUpper(pattern_[s]) == ToUpper(data[i])) {
             ++s;
 
-            if (s == pattern_.size()) {
+            if (s == (state_t)pattern_.size()) {
                 return (i + 1) - size;
             }
         }
@@ -79,3 +79,7 @@ size_t KMPDFA::RunCIS(const char *data, size_t size) const noexcept {
 
     return size;
 }
+
+
+const KMPDFA::CompileFP KMPDFA::g_compile_func[] {&KMPDFA::DoCompileCS, &KMPDFA::DoCompileCIS};
+const KMPDFA::RunFP KMPDFA::g_run_func[] {&KMPDFA::RunCS, &KMPDFA::RunCIS};
