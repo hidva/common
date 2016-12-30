@@ -52,7 +52,7 @@ size_t KMPDFA::RunCS(const char *data, size_t size) const noexcept {
             ++s;
 
             if (s == (state_t)pattern_.size()) {
-                return (i + 1) - size;
+                return (i + 1) - pattern_.size();
             }
         }
     }
@@ -72,7 +72,7 @@ size_t KMPDFA::RunCIS(const char *data, size_t size) const noexcept {
             ++s;
 
             if (s == (state_t)pattern_.size()) {
-                return (i + 1) - size;
+                return (i + 1) - pattern_.size();
             }
         }
     }
