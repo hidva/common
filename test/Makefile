@@ -20,6 +20,7 @@ CXX_SRC += $(common_project_path)/src/common/inline_utils_test.cc	\
 	
 CXX_SRC += $(common_project_path)/src/concurrent/mutex_test.cc
 
+
 CXX_SRC += $(common_project_path)/src/execute_time_get/execute_time_get_test.cc
 
 CXX_SRC += $(common_project_path)/src/glibc_cxx_wrap/test_2.cc \
@@ -38,7 +39,11 @@ CXX_SRC += $(common_project_path)/src/exception/errno_exception.cc \
 CXX_SRC += $(common_project_path)/src/formatter/stdio_formatter_test.cc
 
 CXX_SRC += $(common_project_path)/src/string/extended_std_string_test.cc	\
-	$(common_project_path)/src/string/string_piece.cc	
+	$(common_project_path)/src/string/string_piece.cc	\
+	$(common_project_path)/src/string/ctype.cc		\
+	$(common_project_path)/src/string/ctype_test.cc		\
+	$(common_project_path)/src/string/kmpdfa.cc		\
+	$(common_project_path)/src/string/kmpdfa_test.cc	
 #	$(common_project_path)/src/string/string_piece_test.cc
 
 # CXX_SRC += $(common_project_path)/src/cipher/counter.cc $(common_project_path)/src/cipher/counter_test.cc	\
