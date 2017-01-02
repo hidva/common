@@ -15,6 +15,8 @@
  *      kmpdfa.Compile(); // 完成对模式串的编译.
  *      kmpdfa.Run(); // 对输入串进行匹配. 根据 Compile(), Run() 的文档可知在调用 Compile 之后
  *                    // 可以在任意线程同时调用 kmpdfa.Run() 进行匹配.
+ *
+ * 注意: 当 pattern 的字节长度 >= (2 的 (sizeof(state_t) * 8) 次方)时, 会触发未定义行为.
  */
 struct KMPDFA {
     KMPDFA() = default;
@@ -118,7 +120,7 @@ private:
     void DoCompileCIS() noexcept;
 
 private:
-    using state_t = int;
+    using state_t = unsigned int;
     using CompileFP = decltype(&KMPDFA::DoCompile);
 
 private:
