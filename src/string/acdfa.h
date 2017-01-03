@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <stdexcept>
 #include <initializer_list>
 #include <string>
 #include <vector>
@@ -86,7 +87,40 @@ public:
      *  匹配. 若为 false, 则相反.
      */
     template <typename Iter>
-    void Compile(Iter first, Iter last, bool case_insensitive = false);
+    void Compile(const Iter first, const Iter last, bool case_insensitive = false) {
+        goto_.rows.resize(0);
+        output_.resize(0);
+        fail_.resize(0);
+
+        size_t pattern_bytes_num = 0;
+        for (auto iter = first; iter != last; ++iter) {
+            pattern_bytes_num += iter->size();
+        }
+        if (pattern_bytes_num == 0) {
+            throw std::runtime_error("ACDFA::Compile. ERROR: Invalid Pattern Set");
+        }
+
+        const size_t status_num_max = pattern_bytes_num + 1;
+        goto_.rows.reserve(status_num_max);
+        fail_.reserve(status_num_max);
+        output_.reserve(status_num_max);
+
+        goto_.rows.resize(1);
+        auto compile_func = compile_funcs[case_insensitive];
+        auto ffo_func = ffo_funcs[case_insensitive];
+        for (auto iter = first; iter != last; ++iter) {
+            (this->*compile_func)(iter->data(), iter->size());
+        }
+
+        fail_.resize(goto_.rows.size(), 0);
+        fail_.shrink_to_fit();
+        goto_.rows.shrink_to_fit();
+        output_.shrink_to_fit();
+
+        (this->*ffo_func)();
+
+        return ;
+    }
 
     void Compile(const std::initializer_list<StringRef> &patterns, bool case_insensitive = false) {
         Compile(patterns.begin(), patterns.end(), case_insensitive);
@@ -105,7 +139,35 @@ public:
      *      int on_accept(size_t start, size_t size);
      */
     template <typename F>
-    void Run(const char *data, size_t size, F &&on_accept) const;
+    void Run(const char *data, size_t size, F &&on_accept) const {
+        state_t s = 0;
+        int on_accept_rc = 0;
+
+        for (size_t idx = 0; idx < size; ++idx) {
+            const char ch = data[idx];
+            while (s != 0 && goto_(s, ch) == kNANState) {
+                s = fail_[s];
+            }
+
+            if (goto_(s, ch) != kNANState) {
+                s = goto_(s, ch);
+
+                size_t pattern_end = idx + 1;
+                for (size_t pattern_size : output_[s]) {
+                    on_accept_rc = on_accept(pattern_end - pattern_size, pattern_size);
+                    if (on_accept_rc != 0) {
+                        break;
+                    }
+                }
+            }
+
+            if (on_accept_rc != 0) {
+                break;
+            }
+        }
+
+        return ;
+    }
 
     template <typename F>
     void Run(const char *data, F &&on_accept) const {
@@ -138,6 +200,23 @@ public:
         return Run(str.data(), str.size());
     }
 
+private:
+
+    /* 编译一个 pattern, 参见 Compile() 的实现.
+     */
+    void CompilePatternCS(const char * const data, const size_t size);
+    void CompilePatternCIS(const char * const data, const size_t size);
+
+    void FillFailAndOutputCS();
+    void FillFailAndOutputCIS();
+    void FillFailAndOutput(const uint8_t * const alphabet_ptr, const size_t alphabet_size);
+
+    using CompilePatternFP = decltype(&ACDFA::CompilePatternCS);
+    using FillFailAndOutputFP = decltype(&ACDFA::FillFailAndOutputCS);
+
+    // 通过 case_insensitive 来索引.
+    static const CompilePatternFP compile_funcs[];
+    static const FillFailAndOutputFP ffo_funcs[];
 private:
     using state_t = uint32_t;
 
@@ -190,12 +269,14 @@ private:
         state_t operator () (state_t s, uint8_t symbol) const noexcept {
             return rows[s].tran[symbol];
         }
+
+        state_t& operator () (state_t s, uint8_t symbol) noexcept {
+            return rows[s].tran[symbol];
+        }
     };
 
 private:
     TrieTran goto_;
     std::vector<std::vector<size_t>> output_;
     std::vector<state_t> fail_;
-
-
 };
