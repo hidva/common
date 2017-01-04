@@ -111,6 +111,9 @@ public:
         for (auto iter = first; iter != last; ++iter) {
             (this->*compile_func)(iter->data(), iter->size());
         }
+        /* 这里可以证明: goto_.rows.size() == output_.size().
+         * 我想到一个绝妙而简洁的归纳证明, 可是这里位置太小了, 我无法把它写下来.
+         */
 
         fail_.resize(goto_.rows.size(), 0);
         fail_.shrink_to_fit();
