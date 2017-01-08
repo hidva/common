@@ -35,6 +35,6 @@ TEST(ACDFATest, test1) {
 
     acdfa.Compile({"HE", "she", "hEm", "hE"}, true);
     EXPECT_EQ(Sort({{0, 3}, {1, 2}, {1, 2}, {1, 3}}), Sort(acdfa.Run("SHEM")));
-    EXPECT_EQ(Sort({{0, 2}, {2, 2}}), Sort(acdfa.Run("hehe")));
+    EXPECT_EQ(Sort({{0, 2}, {2, 2}, {0, 2}, {2, 2}}), Sort(acdfa.Run("hehe")));
     EXPECT_EQ(Sort({}), Sort(acdfa.Run("abcd")));
 }
